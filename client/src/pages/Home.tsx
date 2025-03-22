@@ -10,11 +10,17 @@ import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("charts");
+  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
   const [showNewTimerModal, setShowNewTimerModal] = useState(false);
-  const { timers, isLoading, error } = useTimers();
+  const { 
+    timers, 
+    isLoading, 
+    error,
+    archiveTimer 
+  } = useTimers();
   const { toast } = useToast();
 
+  // Handle errors during data loading
   if (error) {
     toast({
       title: "Error",
@@ -49,7 +55,19 @@ export default function Home() {
               <p className="text-gray-500">No timers yet. Add your first timer!</p>
             </div>
           ) : (
-            timers.map((timer) => <TimerCard key={timer.id} timer={timer} />)
+            timers.map((timer) => (
+              <TimerCard 
+                key={timer.id} 
+                timer={timer} 
+                onArchive={(id) => {
+                  archiveTimer(id);
+                  toast({
+                    title: "Timer Archived",
+                    description: `${timer.label} has been moved to archives`
+                  });
+                }}
+              />
+            ))
           )}
         </main>
       )}

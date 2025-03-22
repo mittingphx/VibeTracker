@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Clock, Redo2, Undo2 } from "lucide-react";
+import { Clock, Redo2, Undo2, Archive, MoreVertical } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { EnhancedTimer } from "@shared/schema";
 import { formatTimeDuration } from "@/utils/timeUtils";
@@ -10,14 +10,50 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { playSound } from "@/lib/soundEffects";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TimerCardProps {
   timer: EnhancedTimer;
+  onArchive?: (id: number) => void;
 }
 
-export default function TimerCard({ timer }: TimerCardProps) {
+export default function TimerCard({ timer, onArchive }: TimerCardProps) {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Handle archive
+  const handleArchive = async () => {
+    try {
+      setIsUpdating(true);
+      await apiRequest("POST", `/api/timers/${timer.id}/archive`, {});
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      
+      // Also call the onArchive callback if provided
+      if (onArchive) {
+        onArchive(timer.id);
+      }
+      
+      toast({
+        title: "Timer Archived",
+        description: `${timer.label} has been moved to archives`,
+      });
+    } catch (error) {
+      console.error("Error archiving timer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive timer",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   // Get most recent history entry for this timer to enable undo/redo
   const history = timer.lastPressed ? 
@@ -133,8 +169,28 @@ export default function TimerCard({ timer }: TimerCardProps) {
       <CardContent className="px-5 py-4 flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
-            {/* Timer Label */}
-            <h2 className="text-lg font-semibold text-gray-900">{timer.label}</h2>
+            {/* Timer Label and Actions */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900">{timer.label}</h2>
+              
+              {/* Timer Actions Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer"
+                    onClick={handleArchive}
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    <span>Archive</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             
             {/* Timer Elapsed Time */}
             <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
