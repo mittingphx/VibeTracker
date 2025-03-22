@@ -64,14 +64,13 @@ const getBestUnit = (seconds: number): TimeUnit => {
 export default function SettingsView({ onClose, highlightedTimerId }: SettingsViewProps) {
   const { timers, isLoading } = useTimers();
   const { toast } = useToast();
+  const { user, logoutMutation } = useAuth();
   const [darkMode, setDarkMode] = useState(getThemePreference);
   const [notifications, setNotifications] = useState(true);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
   
-  // User authentication state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
+  // Credits section state
   const [expandedCredits, setExpandedCredits] = useState(false);
   
   // Import/Export references and state
@@ -412,11 +411,20 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   
   // Logout
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUsername("");
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully",
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: "Logged Out",
+          description: "You have been logged out successfully",
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: "Logout Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -688,26 +696,36 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
           <div className="p-4 space-y-4">
             {/* Authentication */}
             <div>
-              {isLoggedIn ? (
+              {user ? (
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-medium dark:text-white">Logged in as {username}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Your timers are synced to your Replit account</div>
+                    <div className="font-medium dark:text-white">Logged in as {user.username}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Your timers are synced to your account</div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
                     onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
                   >
-                    <LogOut className="w-4 h-4" /> Log Out
+                    {logoutMutation.isPending ? (
+                      <>
+                        <div className="animate-spin h-4 w-4 mr-1 border-2 border-current border-t-transparent rounded-full"></div>
+                        Logging out...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4" /> Log Out
+                      </>
+                    )}
                   </Button>
                 </div>
               ) : (
                 <div>
                   <div className="font-medium mb-2 dark:text-white">Sync Your Timers</div>
                   <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
-                    Log in with your Replit account to save your timers and sync across devices
+                    Log in with your account to save your timers and sync across devices
                   </div>
                   <Button
                     variant="default"
