@@ -19,7 +19,9 @@ export interface IStorage {
 
   // Timer operations
   getTimers(includeArchived?: boolean): Promise<Timer[]>;
+  getTimersByUserId(userId: number, includeArchived?: boolean): Promise<Timer[]>;
   getArchivedTimers(): Promise<Timer[]>;
+  getArchivedTimersByUserId(userId: number): Promise<Timer[]>;
   getTimer(id: number): Promise<Timer | undefined>;
   createTimer(timer: InsertTimer): Promise<Timer>;
   updateTimer(id: number, timer: Partial<InsertTimer>): Promise<Timer | undefined>;
@@ -27,6 +29,7 @@ export interface IStorage {
   archiveTimer(id: number): Promise<Timer | undefined>;
   restoreTimer(id: number): Promise<Timer | undefined>;
   clearAllArchivedTimers(): Promise<number>; // Returns number of deleted timers
+  clearAllArchivedTimersByUserId(userId: number): Promise<number>; // Returns number of deleted timers for a user
   
   // Timer history operations
   getTimerHistory(timerId: number): Promise<TimerHistory[]>;
@@ -36,6 +39,7 @@ export interface IStorage {
   
   // Enhanced operations
   getEnhancedTimers(includeArchived?: boolean): Promise<EnhancedTimer[]>;
+  getEnhancedTimersByUserId(userId: number, includeArchived?: boolean): Promise<EnhancedTimer[]>;
   getTimerHistoryByDateRange(startDate: Date, endDate: Date): Promise<TimerHistory[]>;
   
   // Database operations
@@ -342,11 +346,39 @@ export class DatabaseStorage implements IStorage {
         .where(eq(timers.isArchived, false));
     }
   }
+
+  async getTimersByUserId(userId: number, includeArchived: boolean = false): Promise<Timer[]> {
+    if (includeArchived) {
+      return db.select()
+        .from(timers)
+        .where(eq(timers.userId, userId));
+    } else {
+      return db.select()
+        .from(timers)
+        .where(
+          and(
+            eq(timers.isArchived, false),
+            eq(timers.userId, userId)
+          )
+        );
+    }
+  }
   
   async getArchivedTimers(): Promise<Timer[]> {
     return db.select()
       .from(timers)
       .where(eq(timers.isArchived, true));
+  }
+
+  async getArchivedTimersByUserId(userId: number): Promise<Timer[]> {
+    return db.select()
+      .from(timers)
+      .where(
+        and(
+          eq(timers.isArchived, true),
+          eq(timers.userId, userId)
+        )
+      );
   }
 
   async getTimer(id: number): Promise<Timer | undefined> {
@@ -375,6 +407,19 @@ export class DatabaseStorage implements IStorage {
   async clearAllArchivedTimers(): Promise<number> {
     const result = await db.delete(timers)
       .where(eq(timers.isArchived, true))
+      .returning();
+    
+    return result.length;
+  }
+  
+  async clearAllArchivedTimersByUserId(userId: number): Promise<number> {
+    const result = await db.delete(timers)
+      .where(
+        and(
+          eq(timers.isArchived, true),
+          eq(timers.userId, userId)
+        )
+      )
       .returning();
     
     return result.length;
@@ -441,6 +486,62 @@ export class DatabaseStorage implements IStorage {
   // Enhanced operations
   async getEnhancedTimers(includeArchived: boolean = false): Promise<EnhancedTimer[]> {
     const allTimers = await this.getTimers(includeArchived);
+    const enhancedTimers: EnhancedTimer[] = [];
+    
+    for (const timer of allTimers) {
+      // Get the most recent active history entry for this timer
+      const [lastHistory] = await db.select()
+        .from(timerHistory)
+        .where(
+          and(
+            eq(timerHistory.timerId, timer.id),
+            eq(timerHistory.isActive, true)
+          )
+        )
+        .orderBy(desc(timerHistory.timestamp))
+        .limit(1);
+      
+      const lastPressed = lastHistory?.timestamp || null;
+      const now = new Date();
+      
+      // Calculate elapsed time in seconds
+      const elapsedTime = lastPressed 
+        ? Math.max(0, Math.floor((now.getTime() - lastPressed.getTime()) / 1000))
+        : 0;
+      
+      // Calculate progress between min and max time (0-100%)
+      let progress = 0;
+      if (timer.maxTime && timer.minTime < timer.maxTime) {
+        if (elapsedTime <= timer.minTime) {
+          progress = (elapsedTime / timer.minTime) * 50; // 0-50% for min time
+        } else if (elapsedTime >= timer.maxTime) {
+          progress = 100;
+        } else {
+          // 50-100% for between min and max time
+          progress = 50 + ((elapsedTime - timer.minTime) / (timer.maxTime - timer.minTime) * 50);
+        }
+      } else if (timer.minTime > 0) {
+        // If no max time, base progress on min time
+        progress = Math.min(100, (elapsedTime / timer.minTime) * 100);
+      }
+      
+      // Check if we can press the button (min time passed)
+      const canPress = elapsedTime >= timer.minTime;
+      
+      enhancedTimers.push({
+        ...timer,
+        lastPressed,
+        elapsedTime,
+        progress,
+        canPress
+      });
+    }
+    
+    return enhancedTimers;
+  }
+  
+  async getEnhancedTimersByUserId(userId: number, includeArchived: boolean = false): Promise<EnhancedTimer[]> {
+    const allTimers = await this.getTimersByUserId(userId, includeArchived);
     const enhancedTimers: EnhancedTimer[] = [];
     
     for (const timer of allTimers) {

@@ -17,6 +17,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 // Timer table for storing timer definitions
 export const timers = pgTable("timers", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(), // Associate timer with a user
   label: text("label").notNull(),
   minTime: integer("min_time").notNull().default(0), // Min time in seconds
   maxTime: integer("max_time"), // Max time in seconds (optional)

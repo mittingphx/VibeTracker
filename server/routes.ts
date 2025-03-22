@@ -22,10 +22,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Get all enhanced timers
-  router.get("/timers", async (req: Request, res: Response) => {
+  router.get("/timers", requireAuth, async (req: Request, res: Response) => {
     try {
       const includeArchived = req.query.includeArchived === 'true';
-      const timers = await storage.getEnhancedTimers(includeArchived);
+      // Get user ID from authenticated user
+      const userId = req.user!.id;
+      const timers = await storage.getEnhancedTimersByUserId(userId, includeArchived);
       res.json(timers);
     } catch (error) {
       console.error("Error fetching timers:", error);
@@ -34,9 +36,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get archived timers
-  router.get("/timers/archived", async (req: Request, res: Response) => {
+  router.get("/timers/archived", requireAuth, async (req: Request, res: Response) => {
     try {
-      const archivedTimers = await storage.getArchivedTimers();
+      const userId = req.user!.id;
+      const archivedTimers = await storage.getArchivedTimersByUserId(userId);
       res.json(archivedTimers);
     } catch (error) {
       console.error("Error fetching archived timers:", error);
@@ -65,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new timer
-  router.post("/timers", async (req: Request, res: Response) => {
+  router.post("/timers", requireAuth, async (req: Request, res: Response) => {
     try {
       const validatedData = insertTimerSchema.safeParse(req.body);
       
@@ -74,7 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: validationError.message });
       }
       
-      const newTimer = await storage.createTimer(validatedData.data);
+      // Add the user ID to the timer data
+      const timerData = {
+        ...validatedData.data,
+        userId: req.user!.id
+      };
+      
+      const newTimer = await storage.createTimer(timerData);
       res.status(201).json(newTimer);
     } catch (error) {
       console.error("Error creating timer:", error);
