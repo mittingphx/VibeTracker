@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -10,8 +10,13 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatTimeDuration } from "@/utils/timeUtils";
 import { getThemePreference, applyTheme } from "@/lib/themeUtils";
-import { Trash, RefreshCcw, Archive } from "lucide-react";
+import { Trash, RefreshCcw, Archive, Download, Upload, Github, Info, User, LogIn, LogOut } from "lucide-react";
 import { Timer } from "@shared/schema";
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface SettingsViewProps {
   onClose: () => void;
@@ -67,6 +72,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [expandedCredits, setExpandedCredits] = useState(false);
+  
+  // Import/Export references and state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   
   // Archived timers state
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
@@ -302,6 +311,113 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       });
     }
   };
+  
+  // Export timer data to JSON file
+  const handleExportData = () => {
+    // Combine active and archived timers for export
+    const exportData = {
+      timers: timers,
+      archivedTimers: archivedTimers,
+      exportDate: new Date().toISOString(),
+    };
+    
+    // Create a Blob with the data
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a link element to trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vibe-timer-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export Successful",
+      description: "Timer data has been exported successfully",
+    });
+  };
+  
+  // Trigger file input click for import
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Handle file selection for import
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setImportError(null);
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const importData = JSON.parse(content);
+          
+          // Validate the import data structure
+          if (!importData.timers || !Array.isArray(importData.timers)) {
+            throw new Error("Invalid import data: missing timers array");
+          }
+          
+          // Confirm import
+          if (window.confirm(`Import ${importData.timers.length} timers? This will replace your current timers.`)) {
+            // TODO: Call API to handle import on server-side
+            // For now, show a toast that this feature is coming soon
+            toast({
+              title: "Import Functionality",
+              description: "Full import functionality coming soon. Backend API endpoint needs to be implemented.",
+            });
+          }
+        } catch (error) {
+          console.error("Error parsing import data:", error);
+          setImportError("Invalid import file format");
+          toast({
+            title: "Import Failed",
+            description: "The selected file is not a valid timer export",
+            variant: "destructive",
+          });
+        }
+      };
+      
+      reader.readAsText(file);
+    } catch (error) {
+      console.error("Error reading import file:", error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to read the import file",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Login with Replit
+  const handleReplitLogin = () => {
+    // This is a placeholder for Replit authentication implementation
+    // We'll need to set up OAuth with Replit for actual implementation
+    toast({
+      title: "Login Feature",
+      description: "Replit authentication integration coming soon!",
+    });
+  };
+  
+  // Logout
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUsername("");
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully",
+    });
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 z-20 flex flex-col">
@@ -517,6 +633,130 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
               ))}
             </div>
           )}
+        </div>
+        
+        {/* Credits */}
+        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <Collapsible
+            open={expandedCredits}
+            onOpenChange={setExpandedCredits}
+          >
+            <CollapsibleTrigger asChild>
+              <div className="flex justify-between items-center p-4 cursor-pointer border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-medium dark:text-white">
+                  <Info className="w-5 h-5 inline-block mr-2 text-blue-500" />
+                  About VibeTimer
+                </h3>
+                <div className="text-gray-400">
+                  {expandedCredits ? "▲" : "▼"}
+                </div>
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="p-4 space-y-3 text-sm">
+              <p className="dark:text-gray-300">
+                VibeTimer is a productivity app that helps you track time intervals between activities. 
+                It's perfect for habit tracking, time management, and creating routines.
+              </p>
+              <p className="dark:text-gray-300">
+                Built with React, TypeScript, and PostgreSQL. Created on Replit.
+              </p>
+              <div className="flex items-center mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                  onClick={() => window.open("https://github.com/replit", "_blank")}
+                >
+                  <Github className="w-4 h-4" /> GitHub
+                </Button>
+              </div>
+              <div className="text-xs text-gray-500 mt-3 dark:text-gray-400">
+                © {new Date().getFullYear()} VibeTimer. All rights reserved.
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+        
+        {/* User Authentication & Data Management */}
+        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">
+            <User className="w-5 h-5 inline-block mr-2 text-blue-500" />
+            Account & Data
+          </h3>
+          
+          <div className="p-4 space-y-4">
+            {/* Authentication */}
+            <div>
+              {isLoggedIn ? (
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-medium dark:text-white">Logged in as {username}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Your timers are synced to your Replit account</div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4" /> Log Out
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-medium mb-2 dark:text-white">Sync Your Timers</div>
+                  <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
+                    Log in with your Replit account to save your timers and sync across devices
+                  </div>
+                  <Button
+                    variant="default"
+                    className="w-full flex items-center justify-center gap-1.5"
+                    onClick={handleReplitLogin}
+                  >
+                    <LogIn className="w-4 h-4" /> Login with Replit
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {/* Import/Export */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+              <div className="font-medium mb-2 dark:text-white">Import/Export Data</div>
+              <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
+                Export your timers or import from a backup file
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 flex items-center justify-center gap-1"
+                  onClick={handleExportData}
+                >
+                  <Download className="w-4 h-4" /> Export
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 flex items-center justify-center gap-1"
+                  onClick={handleImportClick}
+                >
+                  <Upload className="w-4 h-4" /> Import
+                </Button>
+                
+                {/* Hidden file input for import */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".json"
+                  onChange={handleFileChange}
+                />
+              </div>
+              {importError && (
+                <div className="text-red-500 text-sm mt-2">
+                  {importError}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         
         {/* App Settings */}
