@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TimerCard from "@/components/TimerCard";
 import TabBar from "@/components/TabBar";
 import ChartView from "@/components/ChartView";
@@ -8,6 +8,7 @@ import { useTimers } from "@/hooks/useTimers";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { preloadSounds } from "@/lib/soundEffects";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
@@ -28,6 +29,24 @@ export default function Home() {
       variant: "destructive",
     });
   }
+  
+  // Initialize app and handle global events
+  useEffect(() => {
+    // Preload all sound effects
+    preloadSounds();
+    
+    // Listen for navigateToSettings event from TimerCard
+    const handleNavigateToSettings = () => {
+      setActiveTab("settings");
+    };
+    
+    window.addEventListener('navigateToSettings', handleNavigateToSettings);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('navigateToSettings', handleNavigateToSettings);
+    };
+  }, []);
 
   return (
     <div className="max-w-md mx-auto bg-gray-100 min-h-screen flex flex-col">

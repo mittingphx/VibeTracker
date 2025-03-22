@@ -65,12 +65,14 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
   
-  // Load archived timers
+  // Load archived timers when Settings view opens
   useEffect(() => {
     const fetchArchivedTimers = async () => {
       try {
         setIsLoadingArchived(true);
-        const data = await apiRequest("GET", "/api/timers/archived");
+        const response = await fetch('/api/timers/archived');
+        const data = await response.json();
+        console.log("Archived timers loaded:", data);
         setArchivedTimers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to fetch archived timers:", error);

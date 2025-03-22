@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Clock, Redo2, Undo2, Archive, MoreVertical } from "lucide-react";
+import { Clock, Redo2, Undo2, Archive, MoreVertical, Settings } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { EnhancedTimer } from "@shared/schema";
 import { formatTimeDuration } from "@/utils/timeUtils";
@@ -183,6 +183,45 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
+                    onClick={handleTimerPress}
+                    disabled={!timer.canPress || !timer.isEnabled}
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>Press Timer</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer"
+                    onClick={handleUndo}
+                    disabled={!history || isUpdating}
+                  >
+                    <Undo2 className="mr-2 h-4 w-4" />
+                    <span>Undo</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer"
+                    onClick={handleRedo}
+                    disabled={!history || isUpdating}
+                  >
+                    <Redo2 className="mr-2 h-4 w-4" />
+                    <span>Redo</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer"
+                    onClick={() => {
+                      // Use a callback to navigate to settings tab
+                      const event = new CustomEvent('navigateToSettings');
+                      window.dispatchEvent(event);
+                    }}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer text-red-500"
                     onClick={handleArchive}
                   >
                     <Archive className="mr-2 h-4 w-4" />
