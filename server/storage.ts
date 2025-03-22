@@ -220,6 +220,8 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const timer: Timer = { 
       id,
+      userId: insertTimer.userId,
+      category: insertTimer.category ?? null,
       label: insertTimer.label,
       minTime: insertTimer.minTime ?? 0,
       maxTime: insertTimer.maxTime ?? null,
@@ -317,6 +319,10 @@ export class MemStorage implements IStorage {
   
   async getTimerHistoryById(id: number): Promise<TimerHistory | undefined> {
     return this.timerHistoryMap.get(id);
+  }
+  
+  async deleteTimerHistory(id: number): Promise<boolean> {
+    return this.timerHistoryMap.delete(id);
   }
   
   async getEnhancedTimersByUserId(userId: number, includeArchived: boolean = false): Promise<EnhancedTimer[]> {
