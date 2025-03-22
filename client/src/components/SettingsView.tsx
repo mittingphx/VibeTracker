@@ -63,6 +63,11 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
   
+  // User authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [expandedCredits, setExpandedCredits] = useState(false);
+  
   // Archived timers state
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
