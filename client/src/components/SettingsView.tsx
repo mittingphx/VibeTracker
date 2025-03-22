@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatTimeDuration } from "@/utils/timeUtils";
+import { getThemePreference, applyTheme } from "@/lib/themeUtils";
 import { Trash, RefreshCcw, Archive } from "lucide-react";
 import { Timer } from "@shared/schema";
 
@@ -57,11 +58,7 @@ const getBestUnit = (seconds: number): TimeUnit => {
 export default function SettingsView({ onClose, highlightedTimerId }: SettingsViewProps) {
   const { timers, isLoading } = useTimers();
   const { toast } = useToast();
-  const [darkMode, setDarkMode] = useState(() => {
-    // Check for stored preference in localStorage
-    const storedTheme = localStorage.getItem('theme');
-    return storedTheme === 'dark';
-  });
+  const [darkMode, setDarkMode] = useState(getThemePreference);
   const [notifications, setNotifications] = useState(true);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
@@ -70,14 +67,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
   
-  // Apply dark mode when component mounts
+  // Apply dark mode when component mounts or darkMode changes
   useEffect(() => {
-    // Apply stored theme when component mounts
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Apply theme using the utility function
+    applyTheme(darkMode);
   }, [darkMode]);
 
   // Load archived timers when Settings view opens
@@ -468,8 +461,8 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
         </div>
         
         {/* Archives */}
-        <div className="mx-4 mt-4 bg-white rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200">Archives</h3>
+        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Archives</h3>
           
           {/* Archive Actions */}
           <div className="p-4 flex space-x-2">
@@ -522,33 +515,26 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
         </div>
         
         {/* App Settings */}
-        <div className="mx-4 mt-4 mb-6 bg-white rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200">App Settings</h3>
+        <div className="mx-4 mt-4 mb-6 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">App Settings</h3>
           
           <div className="p-4 space-y-4">
             <div className="flex justify-between items-center">
-              <span>Dark Mode</span>
+              <span className="dark:text-white">Dark Mode</span>
               <Switch 
                 checked={darkMode}
                 onCheckedChange={(checked) => {
                   // Update state
                   setDarkMode(checked);
                   
-                  // Store preference in localStorage
-                  localStorage.setItem('theme', checked ? 'dark' : 'light');
-                  
-                  // Apply to document
-                  if (checked) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
+                  // Apply theme using the utility function
+                  applyTheme(checked);
                 }}
               />
             </div>
             
             <div className="flex justify-between items-center">
-              <span>Notifications</span>
+              <span className="dark:text-white">Notifications</span>
               <Switch
                 checked={notifications}
                 onCheckedChange={setNotifications}
@@ -556,7 +542,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
             </div>
             
             <div className="flex justify-between items-center">
-              <span>Keep Screen Awake</span>
+              <span className="dark:text-white">Keep Screen Awake</span>
               <Switch
                 checked={keepScreenAwake}
                 onCheckedChange={setKeepScreenAwake}
