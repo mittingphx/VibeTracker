@@ -162,7 +162,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
               }
             />
             <VictoryAxis
-              tickFormat={x => format(new Date(x), chartPeriod === "daily" ? "HH:mm" : "EEE")}
+              tickFormat={x => x}
             />
             <VictoryAxis
               dependentAxis
