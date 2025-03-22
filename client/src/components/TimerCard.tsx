@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { playSound } from "@/lib/soundEffects";
+import { useTimerHistory } from "@/hooks/useTimerHistory";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,9 +56,18 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
     }
   };
 
-  // Get most recent history entry for this timer to enable undo/redo
-  const history = timer.lastPressed ? 
-    { id: 0, timestamp: timer.lastPressed } : null;
+  // Use the timer history hook to manage undo/redo functionality
+  const { 
+    canUndo, 
+    canRedo, 
+    isUndoing, 
+    isRedoing, 
+    handleUndo: onHistoryUndo,
+    handleRedo: onHistoryRedo
+  } = useTimerHistory({ 
+    timerId: timer.id,
+    enabled: true
+  });
 
   const handleTimerPress = async () => {
     if (!timer.canPress) {
@@ -92,14 +102,9 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
   };
 
   const handleUndo = async () => {
-    if (!history) return;
-    
     try {
       setIsUpdating(true);
-      // This would need to be implemented with proper history ID from backend
-      // For now, just refresh the timers
-      await apiRequest("PATCH", `/api/history/${history.id}`, { isActive: false });
-      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      await onHistoryUndo();
       
       toast({
         title: "Undo successful",
@@ -117,13 +122,9 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
   };
 
   const handleRedo = async () => {
-    if (!history) return;
-    
     try {
       setIsUpdating(true);
-      // This would need to be implemented with proper history ID from backend
-      await apiRequest("PATCH", `/api/history/${history.id}`, { isActive: true });
-      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      await onHistoryRedo();
       
       toast({
         title: "Redo successful",
@@ -193,7 +194,7 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={handleUndo}
-                    disabled={!history || isUpdating}
+                    disabled={!canUndo || isUpdating || isUndoing || isRedoing}
                   >
                     <Undo2 className="mr-2 h-4 w-4" />
                     <span>Undo</span>
@@ -202,7 +203,7 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={handleRedo}
-                    disabled={!history || isUpdating}
+                    disabled={!canRedo || isUpdating || isUndoing || isRedoing}
                   >
                     <Redo2 className="mr-2 h-4 w-4" />
                     <span>Redo</span>
@@ -211,8 +212,10 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={() => {
-                      // Use a callback to navigate to settings tab
-                      const event = new CustomEvent('navigateToSettings');
+                      // Use a callback to navigate to settings tab and highlight this timer
+                      const event = new CustomEvent('navigateToSettings', {
+                        detail: { timerId: timer.id }
+                      });
                       window.dispatchEvent(event);
                     }}
                   >
@@ -255,9 +258,14 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
               size="icon" 
               className="text-gray-600 hover:text-gray-800 p-1 h-8 w-8"
               onClick={handleUndo}
-              disabled={!history || isUpdating}
+              disabled={!canUndo || isUpdating || isUndoing || isRedoing}
             >
               <Undo2 className="h-4 w-4" />
+              {isUndoing && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                </span>
+              )}
             </Button>
             
             {/* Main Timer Button */}
@@ -282,9 +290,14 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
               size="icon" 
               className="text-gray-600 hover:text-gray-800 p-1 mt-1 h-8 w-8"
               onClick={handleRedo}
-              disabled={!history || isUpdating}
+              disabled={!canRedo || isUpdating || isUndoing || isRedoing}
             >
               <Redo2 className="h-4 w-4" />
+              {isRedoing && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                </span>
+              )}
             </Button>
           </div>
         </div>
