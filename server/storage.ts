@@ -36,6 +36,7 @@ export class MemStorage implements IStorage {
   private userId: number;
   private timerId: number;
   private historyId: number;
+  private initialized: boolean;
 
   constructor() {
     this.users = new Map();
@@ -44,9 +45,17 @@ export class MemStorage implements IStorage {
     this.userId = 1;
     this.timerId = 1;
     this.historyId = 1;
+    this.initialized = false;
     
-    // Add some initial timers
-    this.createTimer({
+    // Initialize data asynchronously
+    this.initializeData();
+  }
+  
+  private async initializeData() {
+    if (this.initialized) return;
+    this.initialized = true;
+    // Create sample timers
+    const timer1 = await this.createTimer({
       label: "Last Cigarette",
       minTime: 4 * 60 * 60, // 4 hours in seconds
       maxTime: 24 * 60 * 60, // 1 day in seconds
@@ -55,7 +64,7 @@ export class MemStorage implements IStorage {
       color: "#007AFF" // iOS blue
     });
     
-    this.createTimer({
+    const timer2 = await this.createTimer({
       label: "Fed Cat",
       minTime: 6 * 60 * 60, // 6 hours in seconds
       maxTime: 8 * 60 * 60, // 8 hours in seconds
@@ -64,13 +73,90 @@ export class MemStorage implements IStorage {
       color: "#FF9500" // iOS orange
     });
     
-    this.createTimer({
+    const timer3 = await this.createTimer({
       label: "Took Medication",
       minTime: 22 * 60 * 60, // 22 hours in seconds
       maxTime: 24 * 60 * 60, // 24 hours in seconds
       isEnabled: true,
       playSound: true,
       color: "#34C759" // iOS green
+    });
+    
+    // Add sample history data for charts
+    // Today's data
+    const now = new Date();
+    
+    // Cigarette timer - entries for today
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 30) // 7:30 AM today
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 15) // 12:15 PM today
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0) // 6:00 PM today
+    });
+    
+    // Yesterday's data for comparison
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 8, 0) // 8:00 AM yesterday
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 13, 0) // 1:00 PM yesterday
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 17, 30) // 5:30 PM yesterday
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer1.id,
+      isActive: true,
+      timestamp: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 22, 0) // 10:00 PM yesterday
+    });
+    
+    // Add some data for the cat feeding timer too
+    await this.createTimerHistory({
+      timerId: timer2.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 0) // 6:00 AM today
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer2.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0) // 2:00 PM today
+    });
+    
+    await this.createTimerHistory({
+      timerId: timer2.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0) // 8:00 PM today
+    });
+    
+    // Medication timer - once per day
+    await this.createTimerHistory({
+      timerId: timer3.id,
+      isActive: true,
+      timestamp: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0) // 8:00 AM today
     });
   }
 
@@ -149,12 +235,12 @@ export class MemStorage implements IStorage {
 
   async createTimerHistory(insertHistory: InsertTimerHistory): Promise<TimerHistory> {
     const id = this.historyId++;
-    const now = new Date();
+    const timestamp = insertHistory.timestamp || new Date();
     const history: TimerHistory = {
       id,
       timerId: insertHistory.timerId,
       isActive: insertHistory.isActive ?? true,
-      timestamp: now
+      timestamp
     };
     this.timerHistoryMap.set(id, history);
     return history;

@@ -41,6 +41,7 @@ export const timerHistory = pgTable("timer_history", {
 
 export const insertTimerHistorySchema = createInsertSchema(timerHistory).omit({
   id: true,
+}).partial({
   timestamp: true,
 });
 

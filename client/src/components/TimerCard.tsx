@@ -140,6 +140,9 @@ export default function TimerCard({ timer }: TimerCardProps) {
             <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
               {formatTimeDuration(timer.elapsedTime)}
             </p>
+            <p className={`text-sm ${timeTextColor} -mt-1`}>
+              {timer.elapsedTime.toLocaleString()} seconds
+            </p>
             
             {/* Last Clicked Date */}
             <p className="text-xs text-gray-600 mt-1">
