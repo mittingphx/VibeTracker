@@ -6,6 +6,7 @@ import { CalendarIcon, BarChart, BarChart2, TrendingUp, Clock } from "lucide-rea
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   VictoryChart,
   VictoryBar,
@@ -28,6 +29,7 @@ type ChartPeriod = "daily" | "weekly";
 type ChartType = "count" | "average" | "events";
 
 export default function ChartView({ onClose }: ChartViewProps) {
+  const isMobile = useIsMobile();
   const { timers } = useTimers();
   const [chartMode, setChartMode] = useState<ChartMode>("today");
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("daily");
