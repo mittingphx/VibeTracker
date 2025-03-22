@@ -78,6 +78,20 @@ export default function AboutView() {
           </div>
         </div>
 
+        <div className={`
+          rounded-xl overflow-hidden shadow-lg 
+          ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
+          p-6 space-y-4
+        `}>
+          <h3 className="text-xl font-medium">Development Cost</h3>
+          <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
+            Approximate cost paid to Replit: <span className="font-semibold text-blue-500 dark:text-blue-400">$19.99</span>
+          </p>
+          <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
+            This represents the monthly Replit subscription fee.
+          </p>
+        </div>
+
         <div className={`text-center ${isDarkMode ? "text-gray-400" : "text-gray-500"} text-sm mt-6`}>
           © {new Date().getFullYear()} VibeTimer by Scott Mitting. All rights reserved.
         </div>
