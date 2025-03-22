@@ -85,10 +85,10 @@ export default function AboutView() {
         `}>
           <h3 className="text-xl font-medium">Development Cost</h3>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-            Approximate cost paid to Replit: <span className="font-semibold text-blue-500 dark:text-blue-400">$19.99</span>
+            Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$4.88</span>
           </p>
           <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-            This represents the monthly Replit subscription fee.
+            This represents the AI usage cost as shown in the Replit admin dashboard.
           </p>
         </div>
 
