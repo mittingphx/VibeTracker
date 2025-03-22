@@ -62,24 +62,24 @@ export default function AboutView() {
           ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
           p-6 space-y-4
         `}>
-          <h3 className="text-xl font-medium">Technology</h3>
+          <h3 className="text-xl font-medium">Developer</h3>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-            Built with React, TypeScript, and PostgreSQL. Created on Replit.
+            Created by Scott Mitting to try out Replit. Built with React, TypeScript, and PostgreSQL.
           </p>
           <div className="flex items-center mt-2">
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
-              className="flex items-center gap-1"
-              onClick={() => window.open("https://github.com/replit", "_blank")}
+              className="flex items-center gap-1 mr-2 bg-[#24292e] hover:bg-[#3a3f45] text-white"
+              onClick={() => window.open("https://github.com/mittingphx", "_blank")}
             >
-              <Github className="w-4 h-4" /> GitHub
+              <Github className="w-4 h-4" /> View My GitHub
             </Button>
           </div>
         </div>
 
         <div className={`text-center ${isDarkMode ? "text-gray-400" : "text-gray-500"} text-sm mt-6`}>
-          © {new Date().getFullYear()} VibeTimer. All rights reserved.
+          © {new Date().getFullYear()} VibeTimer by Scott Mitting. All rights reserved.
         </div>
       </div>
     </div>
