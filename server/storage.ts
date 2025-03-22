@@ -34,8 +34,11 @@ export interface IStorage {
   // Timer history operations
   getTimerHistory(timerId: number): Promise<TimerHistory[]>;
   getAllTimerHistory(): Promise<TimerHistory[]>;
+  getTimerHistoryById(id: number): Promise<TimerHistory | undefined>;
   createTimerHistory(history: InsertTimerHistory): Promise<TimerHistory>;
   updateTimerHistory(id: number, isActive: boolean): Promise<TimerHistory | undefined>;
+  updateTimerHistoryTimestamp(id: number, timestamp: Date): Promise<TimerHistory | undefined>;
+  deleteTimerHistory(id: number): Promise<boolean>;
   
   // Enhanced operations
   getEnhancedTimers(includeArchived?: boolean): Promise<EnhancedTimer[]>;
@@ -474,6 +477,14 @@ export class DatabaseStorage implements IStorage {
     return history;
   }
 
+  async getTimerHistoryById(id: number): Promise<TimerHistory | undefined> {
+    const [history] = await db.select()
+      .from(timerHistory)
+      .where(eq(timerHistory.id, id));
+    
+    return history;
+  }
+
   async updateTimerHistory(id: number, isActive: boolean): Promise<TimerHistory | undefined> {
     const [updatedHistory] = await db.update(timerHistory)
       .set({ isActive })
@@ -481,6 +492,23 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedHistory;
+  }
+  
+  async updateTimerHistoryTimestamp(id: number, timestamp: Date): Promise<TimerHistory | undefined> {
+    const [updatedHistory] = await db.update(timerHistory)
+      .set({ timestamp })
+      .where(eq(timerHistory.id, id))
+      .returning();
+    
+    return updatedHistory;
+  }
+  
+  async deleteTimerHistory(id: number): Promise<boolean> {
+    const [deletedHistory] = await db.delete(timerHistory)
+      .where(eq(timerHistory.id, id))
+      .returning({ id: timerHistory.id });
+    
+    return !!deletedHistory;
   }
 
   // Enhanced operations

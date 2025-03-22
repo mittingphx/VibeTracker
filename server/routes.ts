@@ -249,10 +249,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You don't have permission to press this timer" });
       }
 
+      // Check if custom timestamp was provided
+      let timestamp: Date | undefined = undefined;
+      if (req.body && req.body.timestamp) {
+        timestamp = new Date(req.body.timestamp);
+        if (isNaN(timestamp.getTime())) {
+          return res.status(400).json({ message: "Invalid timestamp format" });
+        }
+      }
+      
       // Create history record
       const history = await storage.createTimerHistory({ 
         timerId,
-        isActive: true
+        isActive: true,
+        timestamp
       });
       
       // Get updated enhanced timer for this user
