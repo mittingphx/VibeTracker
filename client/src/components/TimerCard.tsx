@@ -18,6 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TimerCardProps {
   timer: EnhancedTimer;
@@ -72,7 +78,8 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
   });
 
   const handleTimerPress = async () => {
-    if (!timer.canPress) {
+    // For timers with no previous presses, allow the first press regardless of canPress status
+    if (!timer.canPress && timer.lastPressed) {
       toast({
         title: "Minimum time not reached",
         description: `You need to wait at least ${formatTimeDuration(timer.minTime)}`,
@@ -89,7 +96,9 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
       
       toast({
         title: "Timer updated",
-        description: `${timer.label} timer has been reset`,
+        description: !timer.lastPressed 
+          ? `Started tracking ${timer.label}` 
+          : `${timer.label} timer has been reset`,
       });
     } catch (error) {
       toast({
@@ -168,7 +177,8 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
     }
   }
 
-  const buttonDisabled = isUpdating || !timer.canPress || !timer.isEnabled;
+  // Allow first-time presses even when canPress is false, but button still disabled if timer is disabled
+  const buttonDisabled = isUpdating || (!timer.canPress && timer.lastPressed !== null) || !timer.isEnabled;
 
   return (
     <Card className={`mb-4 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -197,7 +207,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={handleTimerPress}
-                    disabled={!timer.canPress || !timer.isEnabled}
+                    disabled={(!timer.canPress && timer.lastPressed) || !timer.isEnabled}
                   >
                     <Clock className="mr-2 h-4 w-4" />
                     <span>Press Timer</span>
@@ -289,20 +299,37 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
             </Button>
             
             {/* Main Timer Button */}
-            <Button
-              style={{ backgroundColor: buttonDisabled ? "#C7C7CC" : timer.color }}
-              size="icon"
-              className="text-white rounded-full w-14 h-14 flex items-center justify-center mt-1 shadow-md"
-              onClick={handleTimerPress}
-              disabled={buttonDisabled}
-            >
-              <Clock className="h-6 w-6" />
-              {isUpdating && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </span>
-              )}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    style={{ backgroundColor: buttonDisabled ? "#C7C7CC" : timer.color }}
+                    size="icon"
+                    className="text-white rounded-full w-14 h-14 flex items-center justify-center mt-1 shadow-md"
+                    onClick={handleTimerPress}
+                    disabled={buttonDisabled}
+                  >
+                    <Clock className="h-6 w-6" />
+                    {isUpdating && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="p-2 max-w-[230px] text-center">
+                  {!timer.isEnabled 
+                    ? "Timer is disabled. Enable it in settings."
+                    : !timer.canPress 
+                      ? (timer.lastPressed 
+                          ? `Must wait ${formatTimeDuration(timer.minTime)} before next press.`
+                          : `First press is ready! Click to start tracking.`)
+                      : isUpdating
+                        ? "Processing..." 
+                        : "Press to record now"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
             {/* Redo Button */}
             <Button 
