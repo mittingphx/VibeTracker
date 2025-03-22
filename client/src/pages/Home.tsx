@@ -10,7 +10,7 @@ import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
+  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("charts");
   const [showNewTimerModal, setShowNewTimerModal] = useState(false);
   const { timers, isLoading, error } = useTimers();
   const { toast } = useToast();
