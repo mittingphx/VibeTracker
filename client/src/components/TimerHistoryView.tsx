@@ -67,8 +67,8 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
 
   // Edit history mutation
   const editHistoryMutation = useMutation({
-    mutationFn: async ({ id, timestamp }: { id: number; timestamp: Date }) => {
-      return apiRequest("PATCH", `/api/history/${id}`, { timestamp });
+    mutationFn: async ({ id, timestamp, isActive = true }: { id: number; timestamp: Date; isActive?: boolean }) => {
+      return apiRequest("PATCH", `/api/history/${id}`, { timestamp, isActive });
     },
     onSuccess: () => {
       toast({
@@ -148,7 +148,12 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
     const [hours, minutes] = editTime.split(":").map(Number);
     combinedDate.setHours(hours, minutes, 0, 0);
     
-    editHistoryMutation.mutate({ id: editHistoryId, timestamp: combinedDate });
+    // When editing a timestamp, we need to maintain its active state
+    editHistoryMutation.mutate({ 
+      id: editHistoryId, 
+      timestamp: combinedDate,
+      isActive: true // History entries in the UI are already filtered to show only active ones
+    });
   };
 
   // When deleting a history entry

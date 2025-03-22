@@ -284,8 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid history ID" });
       }
 
-      // Validate that isActive is provided
-      const schema = z.object({ isActive: z.boolean() });
+      // Validate required data
+      const schema = z.object({ 
+        isActive: z.boolean(),
+        timestamp: z.date().optional()
+      });
       const validatedData = schema.safeParse(req.body);
       
       if (!validatedData.success) {
