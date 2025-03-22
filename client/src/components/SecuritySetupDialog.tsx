@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { User } from "@shared/schema";
@@ -60,6 +60,9 @@ export default function SecuritySetupDialog({
       });
 
       if (response.ok) {
+        // Invalidate user query to refresh user data
+        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        
         toast({
           title: "Security information saved",
           description: "Your account recovery information has been set up successfully.",

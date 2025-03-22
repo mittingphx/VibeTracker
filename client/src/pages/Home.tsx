@@ -49,7 +49,7 @@ export default function Home() {
   
   // Check if user has security setup and show dialog if needed
   useEffect(() => {
-    if (user && !user.securityQuestion) {
+    if (user && user.securityQuestion === null) {
       setShowSecuritySetup(true);
     }
   }, [user]);
