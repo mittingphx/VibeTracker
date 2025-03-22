@@ -319,11 +319,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get timer history
-  router.get("/timers/:id/history", async (req: Request, res: Response) => {
+  router.get("/timers/:id/history", requireAuth, async (req: Request, res: Response) => {
     try {
       const timerId = parseInt(req.params.id);
       if (isNaN(timerId)) {
         return res.status(400).json({ message: "Invalid timer ID" });
+      }
+
+      // First check if the timer exists and belongs to the authenticated user
+      const timer = await storage.getTimer(timerId);
+      if (!timer) {
+        return res.status(404).json({ message: "Timer not found" });
+      }
+      
+      // Verify ownership
+      if (timer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to access this timer's history" });
       }
 
       const history = await storage.getTimerHistory(timerId);
@@ -335,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get timer history by date range
-  router.get("/history", async (req: Request, res: Response) => {
+  router.get("/history", requireAuth, async (req: Request, res: Response) => {
     try {
       const startDateParam = req.query.startDate as string;
       const endDateParam = req.query.endDate as string;
@@ -354,8 +365,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set end date to end of day
       endDate.setHours(23, 59, 59, 999);
       
+      // Need to modify this to filter by user ID
       const history = await storage.getTimerHistoryByDateRange(startDate, endDate);
-      res.json(history);
+      
+      // Get all user's timers to filter history by
+      const userTimers = await storage.getTimersByUserId(req.user!.id);
+      const userTimerIds = userTimers.map(timer => timer.id);
+      
+      // Filter history to only include entries for the user's timers
+      const filteredHistory = history.filter(entry => userTimerIds.includes(entry.timerId));
+      
+      res.json(filteredHistory);
     } catch (error) {
       console.error("Error fetching history by date range:", error);
       res.status(500).json({ message: "Failed to fetch history" });
