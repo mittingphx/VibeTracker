@@ -149,11 +149,11 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
     const [hours, minutes] = editTime.split(":").map(Number);
     combinedDate.setHours(hours, minutes, 0, 0);
     
-    // When editing a timestamp, we need to maintain its active state
+    // Must provide isActive as true (required by the server API)
     editHistoryMutation.mutate({ 
       id: editHistoryId, 
       timestamp: combinedDate,
-      isActive: true // History entries in the UI are already filtered to show only active ones
+      isActive: true
     });
   };
 
