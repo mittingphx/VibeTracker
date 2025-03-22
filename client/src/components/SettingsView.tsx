@@ -70,8 +70,8 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
     const fetchArchivedTimers = async () => {
       try {
         setIsLoadingArchived(true);
-        const data = await apiRequest<Timer[]>("GET", "/api/timers/archived");
-        setArchivedTimers(data);
+        const data = await apiRequest("GET", "/api/timers/archived");
+        setArchivedTimers(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to fetch archived timers:", error);
         toast({
@@ -322,14 +322,24 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
                         onCheckedChange={(checked) => handleToggleSoundAlert(timer.id, checked)}
                       />
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full mt-2"
-                      onClick={() => handleExpandTimer(timer.id)}
-                    >
-                      {expandedTimerId === timer.id ? "Cancel" : "Edit Settings"}
-                    </Button>
+                    <div className="flex gap-2 mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleExpandTimer(timer.id)}
+                      >
+                        {expandedTimerId === timer.id ? "Cancel" : "Edit Settings"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center"
+                        onClick={() => handleArchiveTimer(timer.id)}
+                      >
+                        <Archive className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
@@ -417,6 +427,60 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
                 )}
               </div>
             ))
+          )}
+        </div>
+        
+        {/* Archives */}
+        <div className="mx-4 mt-4 bg-white rounded-xl overflow-hidden">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200">Archives</h3>
+          
+          {/* Archive Actions */}
+          <div className="p-4 flex space-x-2">
+            {archivedTimers.length > 0 && (
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="flex items-center"
+                onClick={handleClearAllArchived}
+              >
+                <Trash className="w-4 h-4 mr-1" /> Clear All
+              </Button>
+            )}
+          </div>
+          
+          {/* Archived Timers List */}
+          {isLoadingArchived ? (
+            <div className="p-4 flex justify-center">
+              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+            </div>
+          ) : archivedTimers.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              No archived timers
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {archivedTimers.map((timer) => (
+                <div key={timer.id} className="p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">{timer.label}</h4>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Min time: {formatTimeDuration(timer.minTime, true)}
+                        {timer.maxTime ? ` • Target: ${formatTimeDuration(timer.maxTime, true)}` : ''}
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center"
+                      onClick={() => handleRestoreTimer(timer.id)}
+                    >
+                      <RefreshCcw className="w-4 h-4 mr-1" /> Restore
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
         

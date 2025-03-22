@@ -55,18 +55,56 @@ export function useTimers() {
       queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
     },
   });
+  
+  // Mutation for archiving a timer
+  const { mutate: archiveTimer, isPending: isArchiving } = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("POST", `/api/timers/${id}/archive`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+    },
+  });
+  
+  // Mutation for restoring a timer from archive
+  const { mutate: restoreTimer, isPending: isRestoring } = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("POST", `/api/timers/${id}/restore`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/timers/archived"] });
+    },
+  });
+  
+  // Query for archived timers
+  const {
+    data: archivedTimers = [],
+    isLoading: isLoadingArchived,
+    error: archivedError
+  } = useQuery<EnhancedTimer[]>({
+    queryKey: ["/api/timers/archived"],
+    enabled: false, // Only load when needed to avoid unnecessary requests
+  });
 
   return {
     timers,
+    archivedTimers,
     isLoading,
+    isLoadingArchived,
     error,
+    archivedError,
     isPressing,
     isCreating,
     isUpdating,
     isDeleting,
+    isArchiving,
+    isRestoring,
     pressTimer,
     createTimer,
     updateTimer,
     deleteTimer,
+    archiveTimer,
+    restoreTimer,
   };
 }
