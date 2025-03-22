@@ -12,11 +12,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all enhanced timers
   router.get("/timers", async (req: Request, res: Response) => {
     try {
-      const timers = await storage.getEnhancedTimers();
+      const includeArchived = req.query.includeArchived === 'true';
+      const timers = await storage.getEnhancedTimers(includeArchived);
       res.json(timers);
     } catch (error) {
       console.error("Error fetching timers:", error);
       res.status(500).json({ message: "Failed to fetch timers" });
+    }
+  });
+  
+  // Get archived timers
+  router.get("/timers/archived", async (req: Request, res: Response) => {
+    try {
+      const archivedTimers = await storage.getArchivedTimers();
+      res.json(archivedTimers);
+    } catch (error) {
+      console.error("Error fetching archived timers:", error);
+      res.status(500).json({ message: "Failed to fetch archived timers" });
     }
   });
 
@@ -86,7 +98,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete timer
+  // Archive timer (instead of deleting)
+  router.post("/timers/:id/archive", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid timer ID" });
+      }
+
+      const archivedTimer = await storage.archiveTimer(id);
+      if (!archivedTimer) {
+        return res.status(404).json({ message: "Timer not found" });
+      }
+      
+      res.json(archivedTimer);
+    } catch (error) {
+      console.error("Error archiving timer:", error);
+      res.status(500).json({ message: "Failed to archive timer" });
+    }
+  });
+  
+  // Restore timer from archive
+  router.post("/timers/:id/restore", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid timer ID" });
+      }
+
+      const restoredTimer = await storage.restoreTimer(id);
+      if (!restoredTimer) {
+        return res.status(404).json({ message: "Timer not found" });
+      }
+      
+      res.json(restoredTimer);
+    } catch (error) {
+      console.error("Error restoring timer:", error);
+      res.status(500).json({ message: "Failed to restore timer" });
+    }
+  });
+  
+  // Clear all archived timers
+  router.delete("/timers/archived", async (req: Request, res: Response) => {
+    try {
+      const count = await storage.clearAllArchivedTimers();
+      res.json({ message: `${count} archived timers deleted successfully` });
+    } catch (error) {
+      console.error("Error clearing archived timers:", error);
+      res.status(500).json({ message: "Failed to clear archived timers" });
+    }
+  });
+  
+  // Delete timer (permanent deletion - keeping for backward compatibility)
   router.delete("/timers/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);

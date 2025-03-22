@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatTimeDuration } from "@/utils/timeUtils";
+import { Trash, RefreshCcw, Archive } from "lucide-react";
+import { Timer } from "@shared/schema";
 
 interface SettingsViewProps {
   onClose: () => void;
@@ -58,6 +60,32 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
   const [notifications, setNotifications] = useState(true);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
+  
+  // Archived timers state
+  const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
+  const [isLoadingArchived, setIsLoadingArchived] = useState(false);
+  
+  // Load archived timers
+  useEffect(() => {
+    const fetchArchivedTimers = async () => {
+      try {
+        setIsLoadingArchived(true);
+        const data = await apiRequest<Timer[]>("GET", "/api/timers/archived");
+        setArchivedTimers(data);
+      } catch (error) {
+        console.error("Failed to fetch archived timers:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load archived timers",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingArchived(false);
+      }
+    };
+
+    fetchArchivedTimers();
+  }, [toast]);
   
   // State for editing timer settings
   const [editMinTime, setEditMinTime] = useState<number>(0);
@@ -163,6 +191,78 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
       toast({
         title: "Error",
         description: "Failed to update timer settings",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Archive timer instead of deleting
+  const handleArchiveTimer = async (id: number) => {
+    try {
+      await apiRequest("POST", `/api/timers/${id}/archive`, {});
+      
+      // Remove from active timers and add to archived
+      const timerToArchive = timers.find(t => t.id === id);
+      if (timerToArchive) {
+        setArchivedTimers([...archivedTimers, timerToArchive]);
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      
+      toast({
+        title: "Timer Archived",
+        description: "Timer has been moved to the archive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to archive timer",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Restore timer from archive
+  const handleRestoreTimer = async (id: number) => {
+    try {
+      await apiRequest("POST", `/api/timers/${id}/restore`, {});
+      
+      // Remove from archived list
+      setArchivedTimers(archivedTimers.filter(t => t.id !== id));
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      
+      toast({
+        title: "Timer Restored",
+        description: "Timer has been restored from the archive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to restore timer",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Delete all archived timers
+  const handleClearAllArchived = async () => {
+    if (!window.confirm("Are you sure you want to permanently delete all archived timers? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await apiRequest("DELETE", "/api/timers/archived", {});
+      setArchivedTimers([]);
+      
+      toast({
+        title: "Archives Cleared",
+        description: "All archived timers have been permanently deleted",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear archives",
         variant: "destructive",
       });
     }

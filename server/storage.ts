@@ -192,12 +192,60 @@ export class MemStorage implements IStorage {
   }
 
   // Timer operations
-  async getTimers(): Promise<Timer[]> {
-    return Array.from(this.timersMap.values());
+  async getTimers(includeArchived: boolean = false): Promise<Timer[]> {
+    if (includeArchived) {
+      return Array.from(this.timersMap.values());
+    } else {
+      return Array.from(this.timersMap.values())
+        .filter(timer => !timer.isArchived);
+    }
+  }
+
+  async getArchivedTimers(): Promise<Timer[]> {
+    return Array.from(this.timersMap.values())
+      .filter(timer => timer.isArchived);
   }
 
   async getTimer(id: number): Promise<Timer | undefined> {
     return this.timersMap.get(id);
+  }
+  
+  async archiveTimer(id: number): Promise<Timer | undefined> {
+    const timer = this.timersMap.get(id);
+    if (!timer) return undefined;
+    
+    const updatedTimer: Timer = {
+      ...timer,
+      isArchived: true
+    };
+    
+    this.timersMap.set(id, updatedTimer);
+    return updatedTimer;
+  }
+  
+  async restoreTimer(id: number): Promise<Timer | undefined> {
+    const timer = this.timersMap.get(id);
+    if (!timer) return undefined;
+    
+    const updatedTimer: Timer = {
+      ...timer,
+      isArchived: false
+    };
+    
+    this.timersMap.set(id, updatedTimer);
+    return updatedTimer;
+  }
+  
+  async clearAllArchivedTimers(): Promise<number> {
+    const archivedIds = Array.from(this.timersMap.entries())
+      .filter(([_, timer]) => timer.isArchived)
+      .map(([id, _]) => id);
+    
+    for (const id of archivedIds) {
+      this.timersMap.delete(id);
+    }
+    
+    return archivedIds.length;
   }
 
   async createTimer(insertTimer: InsertTimer): Promise<Timer> {
@@ -274,8 +322,8 @@ export class MemStorage implements IStorage {
   }
 
   // Enhanced operations
-  async getEnhancedTimers(): Promise<EnhancedTimer[]> {
-    const timers = await this.getTimers();
+  async getEnhancedTimers(includeArchived: boolean = false): Promise<EnhancedTimer[]> {
+    const timers = await this.getTimers(includeArchived);
     const enhancedTimers: EnhancedTimer[] = [];
     
     for (const timer of timers) {
