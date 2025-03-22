@@ -7,11 +7,17 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  securityQuestion: text("security_question"),
+  securityAnswer: text("security_answer"),
+  recoveryPin: text("recovery_pin"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  securityQuestion: true,
+  securityAnswer: true,
+  recoveryPin: true,
 });
 
 // Timer table for storing timer definitions

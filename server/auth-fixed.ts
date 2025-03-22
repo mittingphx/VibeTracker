@@ -43,8 +43,10 @@ export function setupAuth(app: Express) {
       saveUninitialized: false,
       cookie: {
         secure: process.env.NODE_ENV === "production",
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+        // Cookie expiration will be set dynamically based on stayLoggedIn parameter
+        maxAge: 1000 * 60 * 60 * 24, // Default to 1 day
       },
+      store: storage.sessionStore,
     })
   );
 
@@ -119,6 +121,14 @@ export function setupAuth(app: Express) {
         if (err) return next(err);
         if (!user) {
           return res.status(401).json({ message: info?.message || "Authentication failed" });
+        }
+        
+        // Handle the "Stay logged in" option
+        if (req.body.stayLoggedIn) {
+          // Set the session to last for 30 days
+          if (req.session.cookie) {
+            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+          }
         }
         
         req.login(user, (err) => {

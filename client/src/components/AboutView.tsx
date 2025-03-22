@@ -88,7 +88,7 @@ export default function AboutView() {
             Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$4.88</span>
           </p>
           <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-            This represents the AI usage cost as shown in the Replit admin dashboard.
+            This represents the AI usage cost as of March 22, 2025, as shown in the Replit admin dashboard.
           </p>
         </div>
 
