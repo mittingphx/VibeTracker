@@ -4,6 +4,7 @@ import TabBar from "@/components/TabBar";
 import ChartView from "@/components/ChartView";
 import SettingsView from "@/components/SettingsView";
 import NewTimerModal from "@/components/NewTimerModal";
+import TimerHistoryView from "@/components/TimerHistoryView";
 import { useTimers } from "@/hooks/useTimers";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
@@ -35,6 +36,11 @@ export default function Home() {
   
   // State to store the timer ID to highlight in settings
   const [highlightedTimerId, setHighlightedTimerId] = useState<number | null>(null);
+  
+  // State for timer history view
+  const [showHistoryView, setShowHistoryView] = useState(false);
+  const [historyTimerId, setHistoryTimerId] = useState<number | null>(null);
+  const [historyTimerName, setHistoryTimerName] = useState<string>("");
   
   // Auto-launch timer creation modal when logged in with no timers
   useEffect(() => {
@@ -84,8 +90,8 @@ export default function Home() {
         </Button>
       </header>
 
-      {/* Main Content - Timer List */}
-      {activeTab === "timers" && (
+      {/* Main Content - Timer List or History View */}
+      {activeTab === "timers" && !showHistoryView && (
         <main className="flex-1 overflow-auto px-4 py-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
@@ -107,9 +113,29 @@ export default function Home() {
                     description: `${timer.label} has been moved to archives`
                   });
                 }}
+                onViewHistory={(id, label) => {
+                  setHistoryTimerId(id);
+                  setHistoryTimerName(label);
+                  setShowHistoryView(true);
+                }}
               />
             ))
           )}
+        </main>
+      )}
+      
+      {/* Timer History View */}
+      {activeTab === "timers" && showHistoryView && historyTimerId && (
+        <main className="flex-1 overflow-hidden">
+          <TimerHistoryView 
+            timerId={historyTimerId}
+            timerName={historyTimerName}
+            onClose={() => {
+              setShowHistoryView(false);
+              setHistoryTimerId(null);
+              setHistoryTimerName("");
+            }}
+          />
         </main>
       )}
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Clock, Redo2, Undo2, Archive, MoreVertical, Settings } from "lucide-react";
+import { Clock, Redo2, Undo2, Archive, MoreVertical, Settings, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { EnhancedTimer } from "@shared/schema";
 import { formatTimeDuration } from "@/utils/timeUtils";
@@ -22,9 +22,10 @@ import {
 interface TimerCardProps {
   timer: EnhancedTimer;
   onArchive?: (id: number) => void;
+  onViewHistory?: (id: number, label: string) => void;
 }
 
-export default function TimerCard({ timer, onArchive }: TimerCardProps) {
+export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCardProps) {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   
@@ -225,6 +226,14 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center cursor-pointer"
+                    onClick={() => onViewHistory && onViewHistory(timer.id, timer.label)}
+                  >
+                    <History className="mr-2 h-4 w-4" />
+                    <span>View History</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem 
