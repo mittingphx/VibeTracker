@@ -12,6 +12,7 @@ import { formatTimeDuration } from "@/utils/timeUtils";
 import { getThemePreference, applyTheme } from "@/lib/themeUtils";
 import { Trash, RefreshCcw, Archive, Download, Upload, Github, Info, User, LogIn, LogOut } from "lucide-react";
 import { Timer } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   Collapsible,
   CollapsibleContent,
