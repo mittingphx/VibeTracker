@@ -30,21 +30,30 @@ export default function Home() {
     });
   }
   
+  // State to store the timer ID to highlight in settings
+  const [highlightedTimerId, setHighlightedTimerId] = useState<number | null>(null);
+  
   // Initialize app and handle global events
   useEffect(() => {
     // Preload all sound effects
     preloadSounds();
     
     // Listen for navigateToSettings event from TimerCard
-    const handleNavigateToSettings = () => {
+    const handleNavigateToSettings = (event: Event) => {
+      const customEvent = event as CustomEvent<{timerId?: number}>;
+      if (customEvent.detail && customEvent.detail.timerId) {
+        setHighlightedTimerId(customEvent.detail.timerId);
+      } else {
+        setHighlightedTimerId(null);
+      }
       setActiveTab("settings");
     };
     
-    window.addEventListener('navigateToSettings', handleNavigateToSettings);
+    window.addEventListener('navigateToSettings', handleNavigateToSettings as EventListener);
     
     // Cleanup
     return () => {
-      window.removeEventListener('navigateToSettings', handleNavigateToSettings);
+      window.removeEventListener('navigateToSettings', handleNavigateToSettings as EventListener);
     };
   }, []);
 
@@ -95,7 +104,15 @@ export default function Home() {
       {activeTab === "charts" && <ChartView onClose={() => setActiveTab("timers")} />}
 
       {/* Settings View */}
-      {activeTab === "settings" && <SettingsView onClose={() => setActiveTab("timers")} />}
+      {activeTab === "settings" && 
+        <SettingsView 
+          onClose={() => {
+            setActiveTab("timers");
+            setHighlightedTimerId(null);
+          }} 
+          highlightedTimerId={highlightedTimerId}
+        />
+      }
 
       {/* Bottom Tab Bar */}
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />

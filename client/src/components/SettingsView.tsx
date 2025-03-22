@@ -14,6 +14,7 @@ import { Timer } from "@shared/schema";
 
 interface SettingsViewProps {
   onClose: () => void;
+  highlightedTimerId?: number | null;
 }
 
 type TimeUnit = "minutes" | "hours" | "days";
@@ -53,7 +54,7 @@ const getBestUnit = (seconds: number): TimeUnit => {
   return "minutes";
 };
 
-export default function SettingsView({ onClose }: SettingsViewProps) {
+export default function SettingsView({ onClose, highlightedTimerId }: SettingsViewProps) {
   const { timers, isLoading } = useTimers();
   const { toast } = useToast();
   const [darkMode, setDarkMode] = useState(false);
@@ -88,6 +89,21 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
 
     fetchArchivedTimers();
   }, [toast]);
+  
+  // Auto-expand the highlighted timer (if provided)
+  useEffect(() => {
+    if (highlightedTimerId && !isLoading) {
+      handleExpandTimer(highlightedTimerId);
+      
+      // Scroll to the highlighted timer with smooth animation
+      setTimeout(() => {
+        const timerElement = document.getElementById(`timer-${highlightedTimerId}`);
+        if (timerElement) {
+          timerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, [highlightedTimerId, isLoading, timers]);
   
   // State for editing timer settings
   const [editMinTime, setEditMinTime] = useState<number>(0);
@@ -294,7 +310,7 @@ export default function SettingsView({ onClose }: SettingsViewProps) {
             </div>
           ) : (
             timers.map((timer) => (
-              <div key={timer.id} className="border-b border-gray-200 last:border-0">
+              <div id={`timer-${timer.id}`} key={timer.id} className="border-b border-gray-200 last:border-0">
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-medium">{timer.label}</span>
