@@ -9,15 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, TimerOff } from "lucide-react";
+import { Loader2, TimerOff, KeyRound, HelpCircle, ArrowLeft } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 // Create authentication schemas based on insert user schema
 const loginSchema = insertUserSchema.pick({
   username: true,
   password: true,
+}).extend({
+  stayLoggedIn: z.boolean().default(false)
 });
 
-// Add password confirmation for registration
+// Add password confirmation and security fields for registration
 const registerSchema = insertUserSchema
   .pick({
     username: true,
@@ -25,6 +31,9 @@ const registerSchema = insertUserSchema
   })
   .extend({
     confirmPassword: z.string().min(1, "Confirm password is required"),
+    securityQuestion: z.string().min(3, "Security question is required"),
+    securityAnswer: z.string().min(1, "Security answer is required"),
+    recoveryPin: z.string().length(4, "Recovery PIN must be 4 digits").regex(/^\d+$/, "PIN must contain only digits"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -43,17 +52,151 @@ export default function AuthPage() {
     }
   }, [user, isLoading, navigate]);
 
+  // Recovery states
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [recoveryStep, setRecoveryStep] = useState(1);
+  const [recoveryUsername, setRecoveryUsername] = useState("");
+  const [securityQuestion, setSecurityQuestion] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [recoveryPin, setRecoveryPin] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const { toast } = useToast();
+
   // Login form handling
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
+      stayLoggedIn: false
     },
   });
 
   const onLoginSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data);
+  };
+  
+  // Password recovery handlers
+  const startRecovery = () => {
+    setRecoveryMode(true);
+    setRecoveryStep(1);
+    setErrorMsg("");
+  };
+  
+  const cancelRecovery = () => {
+    setRecoveryMode(false);
+    setRecoveryStep(1);
+    setRecoveryUsername("");
+    setSecurityQuestion("");
+    setSecurityAnswer("");
+    setRecoveryPin("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setErrorMsg("");
+  };
+  
+  const checkUsername = async () => {
+    if (!recoveryUsername) {
+      setErrorMsg("Please enter your username");
+      return;
+    }
+    
+    setRecoveryLoading(true);
+    setErrorMsg("");
+    
+    try {
+      const response = await apiRequest("POST", "/api/recovery/check", { 
+        username: recoveryUsername 
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSecurityQuestion(data.securityQuestion);
+        setRecoveryStep(2);
+      } else {
+        const error = await response.json();
+        setErrorMsg(error.message || "User not found or no security question set");
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred. Please try again.");
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
+  
+  const verifySecurityAnswer = async () => {
+    if (!securityAnswer) {
+      setErrorMsg("Please enter your security answer");
+      return;
+    }
+    
+    setRecoveryLoading(true);
+    setErrorMsg("");
+    
+    try {
+      const response = await apiRequest("POST", "/api/recovery/verify", { 
+        username: recoveryUsername,
+        securityAnswer: securityAnswer
+      });
+      
+      if (response.ok) {
+        setRecoveryStep(3);
+      } else {
+        const error = await response.json();
+        setErrorMsg(error.message || "Security answer is incorrect");
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred. Please try again.");
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
+  
+  const resetPassword = async () => {
+    if (!recoveryPin) {
+      setErrorMsg("Please enter your recovery PIN");
+      return;
+    }
+    
+    if (!newPassword) {
+      setErrorMsg("Please enter a new password");
+      return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+      setErrorMsg("Passwords do not match");
+      return;
+    }
+    
+    setRecoveryLoading(true);
+    setErrorMsg("");
+    
+    try {
+      const response = await apiRequest("POST", "/api/recovery/reset", { 
+        username: recoveryUsername,
+        recoveryPin: recoveryPin,
+        newPassword: newPassword
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Password reset successful",
+          description: "You can now log in with your new password",
+          variant: "default"
+        });
+        cancelRecovery();
+      } else {
+        const error = await response.json();
+        setErrorMsg(error.message || "Failed to reset password");
+      }
+    } catch (error) {
+      setErrorMsg("An error occurred. Please try again.");
+    } finally {
+      setRecoveryLoading(false);
+    }
   };
 
   // Register form handling
@@ -63,6 +206,9 @@ export default function AuthPage() {
       username: "",
       password: "",
       confirmPassword: "",
+      securityQuestion: "",
+      securityAnswer: "",
+      recoveryPin: "",
     },
   });
 
@@ -81,6 +227,121 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Password Recovery Dialog */}
+      <Dialog open={recoveryMode} onOpenChange={setRecoveryMode}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              {recoveryStep > 1 && (
+                <Button variant="ghost" size="icon" className="h-8 w-8 mr-2" onClick={() => setRecoveryStep(recoveryStep - 1)}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              )}
+              {recoveryStep === 1 && <KeyRound className="h-5 w-5 mr-2" />}
+              {recoveryStep === 1 && "Recover Your Password"}
+              {recoveryStep === 2 && "Security Question"}
+              {recoveryStep === 3 && "Reset Password"}
+            </DialogTitle>
+            <DialogDescription>
+              {recoveryStep === 1 && "Enter your username to start the recovery process."}
+              {recoveryStep === 2 && "Answer your security question to verify your identity."}
+              {recoveryStep === 3 && "Enter your 4-digit recovery PIN and choose a new password."}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {errorMsg && (
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm p-3 rounded-md mb-4">
+              {errorMsg}
+            </div>
+          )}
+          
+          {recoveryStep === 1 && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Username</label>
+                <Input
+                  value={recoveryUsername}
+                  onChange={(e) => setRecoveryUsername(e.target.value)}
+                  placeholder="Enter your username"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
+                <Button onClick={checkUsername} disabled={recoveryLoading}>
+                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {recoveryStep === 2 && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Security Question</label>
+                <div className="p-3 bg-muted rounded-md text-sm">
+                  {securityQuestion}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your Answer</label>
+                <Input
+                  value={securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                  placeholder="Enter your answer"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
+                <Button onClick={verifySecurityAnswer} disabled={recoveryLoading}>
+                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Verify
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {recoveryStep === 3 && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Recovery PIN (4 digits)</label>
+                <Input
+                  value={recoveryPin}
+                  onChange={(e) => setRecoveryPin(e.target.value)}
+                  maxLength={4}
+                  placeholder="Enter your 4-digit PIN"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">New Password</label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Create a new password"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Confirm New Password</label>
+                <Input
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm your new password"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
+                <Button onClick={resetPassword} disabled={recoveryLoading}>
+                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Reset Password
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    
       {/* Auth Form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center p-8">
         <div className="max-w-md mx-auto w-full">
@@ -125,6 +386,24 @@ export default function AuthPage() {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={loginForm.control}
+                    name="stayLoggedIn"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-1">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Stay logged in for 30 days</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
 
                   <Button
                     type="submit"
@@ -136,6 +415,17 @@ export default function AuthPage() {
                     ) : null}
                     Login
                   </Button>
+                  
+                  <div className="text-center mt-4">
+                    <Button 
+                      variant="link" 
+                      type="button"
+                      onClick={startRecovery}
+                      className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
+                      Forgot your password?
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </TabsContent>
