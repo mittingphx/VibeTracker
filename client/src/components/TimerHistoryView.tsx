@@ -18,6 +18,7 @@ import { X, Calendar as CalendarIcon, Edit, RotateCcw, Clock, Plus } from "lucid
 import { format } from "date-fns";
 import { formatDateTime } from "@/utils/timeUtils";
 import { TimerHistory, Timer } from "@shared/schema";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -181,8 +182,10 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
     setQuickAddOpen(false);
   };
 
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="flex flex-col h-full border rounded-lg bg-background">
+    <div className={`flex flex-col h-full ${isMobile ? 'bg-background' : 'border rounded-lg bg-background'}`}>
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-lg font-semibold">History for "{timerName}"</h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
