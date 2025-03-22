@@ -68,8 +68,13 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
 
   // Edit history mutation
   const editHistoryMutation = useMutation({
-    mutationFn: async ({ id, timestamp, isActive = true }: { id: number; timestamp: Date; isActive?: boolean }) => {
-      return apiRequest("PATCH", `/api/history/${id}`, { timestamp, isActive });
+    mutationFn: async ({ id, timestamp, isActive }: { id: number; timestamp: Date; isActive: boolean }) => {
+      // Make sure isActive is explicitly sent as a boolean
+      // Send timestamp as an ISO string (Zod will parse it to a Date)
+      return apiRequest("PATCH", `/api/history/${id}`, { 
+        timestamp: timestamp.toISOString(), 
+        isActive: Boolean(isActive) 
+      });
     },
     onSuccess: () => {
       toast({
@@ -77,6 +82,7 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
         description: "Timer press updated successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/timers", timerId, "history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
       setShowEditDialog(false);
     },
     onError: (error: Error) => {
@@ -112,7 +118,9 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
   // Add history mutation
   const addHistoryMutation = useMutation({
     mutationFn: async (timestamp: Date) => {
-      return apiRequest("POST", `/api/timers/${timerId}/press`, { timestamp });
+      return apiRequest("POST", `/api/timers/${timerId}/press`, { 
+        timestamp: timestamp.toISOString() 
+      });
     },
     onSuccess: () => {
       toast({
