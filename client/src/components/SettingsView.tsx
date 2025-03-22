@@ -432,8 +432,8 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 z-20 flex justify-center">
-      <div className="flex flex-col w-full max-w-2xl shadow-xl h-full overflow-hidden">
+    <div className="fixed inset-0 bg-gray-600/20 dark:bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4">
+      <div className="flex flex-col w-full max-w-2xl bg-white dark:bg-gray-900 shadow-2xl h-[95vh] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
         <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
           <Button variant="ghost" className="text-blue-500" onClick={onClose}>
