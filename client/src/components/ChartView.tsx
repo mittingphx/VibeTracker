@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CalendarIcon, BarChart, BarChart2, TrendingUp, Clock } from "lucide-react";
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
+import { getThemePreference } from "@/lib/themeUtils";
 import {
   VictoryChart,
   VictoryBar,
@@ -80,10 +81,25 @@ export default function ChartView({ onClose }: ChartViewProps) {
     return timers.find(timer => timer.id === id) || { color: "#ccc", label: "Unknown" };
   };
 
+  // Get theme preference
+  const isDarkMode = getThemePreference();
+  
+  // Set chart theme based on dark mode
+  const chartTheme = isDarkMode ? {
+    ...VictoryTheme.material,
+    axis: {
+      style: {
+        grid: { stroke: "rgba(255, 255, 255, 0.1)" },
+        tickLabels: { fill: "rgba(255, 255, 255, 0.8)" },
+        axisLabel: { fill: "white" }
+      }
+    }
+  } : VictoryTheme.material;
+  
   return (
-    <div className="fixed inset-0 bg-white z-20 flex flex-col">
-      <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200">
-        <h2 className="text-2xl font-bold">Charts</h2>
+    <div className={`fixed inset-0 ${isDarkMode ? 'bg-gray-900' : 'bg-white'} z-20 flex flex-col`}>
+      <header className={`pt-12 pb-2 px-4 flex items-center justify-between border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Charts</h2>
         <Button variant="ghost" className="text-blue-500" onClick={onClose}>
           Done
         </Button>
@@ -111,7 +127,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
       
       {/* Chart Period Selection */}
       <div className="p-4 flex items-center justify-between">
-        <h3 className="text-xl font-semibold">
+        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           {chartType === "count" && (chartPeriod === "daily" ? "Daily Activity" : "Weekly Summary")}
           {chartType === "average" && "Average Minutes Between Presses"}
           {chartType === "events" && "Press Timeline"}
@@ -144,7 +160,11 @@ export default function ChartView({ onClose }: ChartViewProps) {
         <div className="px-4 flex space-x-4 mb-4">
           <Button
             variant="ghost"
-            className={`px-2 ${chartPeriod === "daily" ? "text-blue-500 border-b-2 border-blue-500" : "text-gray-600"}`}
+            className={`px-2 ${
+              chartPeriod === "daily" 
+                ? "text-blue-500 border-b-2 border-blue-500" 
+                : isDarkMode ? "text-gray-400" : "text-gray-600"
+            }`}
             onClick={() => setChartPeriod("daily")}
           >
             <BarChart className="h-4 w-4 mr-2" />
@@ -152,7 +172,11 @@ export default function ChartView({ onClose }: ChartViewProps) {
           </Button>
           <Button
             variant="ghost"
-            className={`px-2 ${chartPeriod === "weekly" ? "text-blue-500 border-b-2 border-blue-500" : "text-gray-600"}`}
+            className={`px-2 ${
+              chartPeriod === "weekly" 
+                ? "text-blue-500 border-b-2 border-blue-500" 
+                : isDarkMode ? "text-gray-400" : "text-gray-600"
+            }`}
             onClick={() => setChartPeriod("weekly")}
           >
             <BarChart2 className="h-4 w-4 mr-2" />
@@ -162,7 +186,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
       )}
       
       {/* Chart Display */}
-      <div className="mx-4 border rounded-xl p-4 bg-gray-50 flex-1 overflow-auto">
+      <div className={`mx-4 border rounded-xl p-4 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'} flex-1 overflow-auto`}>
         {isLoading ? (
           <div className="h-64 flex items-center justify-center">
             <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
