@@ -16,6 +16,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined>;
 
   // Timer operations
   getTimers(includeArchived?: boolean): Promise<Timer[]>;
@@ -106,9 +107,28 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      securityQuestion: insertUser.securityQuestion || null,
+      securityAnswer: insertUser.securityAnswer || null,
+      recoveryPin: insertUser.recoveryPin || null
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = {
+      ...user,
+      ...userData
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   // Timer operations
@@ -121,9 +141,36 @@ export class MemStorage implements IStorage {
     }
   }
 
+  async getTimersByUserId(userId: number, includeArchived: boolean = false): Promise<Timer[]> {
+    if (includeArchived) {
+      return Array.from(this.timersMap.values())
+        .filter(timer => timer.userId === userId);
+    } else {
+      return Array.from(this.timersMap.values())
+        .filter(timer => !timer.isArchived && timer.userId === userId);
+    }
+  }
+
   async getArchivedTimers(): Promise<Timer[]> {
     return Array.from(this.timersMap.values())
       .filter(timer => timer.isArchived);
+  }
+
+  async getArchivedTimersByUserId(userId: number): Promise<Timer[]> {
+    return Array.from(this.timersMap.values())
+      .filter(timer => timer.isArchived && timer.userId === userId);
+  }
+  
+  async clearAllArchivedTimersByUserId(userId: number): Promise<number> {
+    const archivedIds = Array.from(this.timersMap.entries())
+      .filter(([_, timer]) => timer.isArchived && timer.userId === userId)
+      .map(([id, _]) => id);
+    
+    for (const id of archivedIds) {
+      this.timersMap.delete(id);
+    }
+    
+    return archivedIds.length;
   }
 
   async getTimer(id: number): Promise<Timer | undefined> {
@@ -240,6 +287,84 @@ export class MemStorage implements IStorage {
     this.timerHistoryMap.set(id, updatedHistory);
     return updatedHistory;
   }
+  
+  async updateTimerHistoryTimestamp(id: number, timestamp: Date): Promise<TimerHistory | undefined> {
+    const history = this.timerHistoryMap.get(id);
+    if (!history) return undefined;
+    
+    const updatedHistory: TimerHistory = {
+      ...history,
+      timestamp
+    };
+    
+    this.timerHistoryMap.set(id, updatedHistory);
+    return updatedHistory;
+  }
+  
+  async updateTimerHistoryFull(id: number, data: { timestamp?: Date; isActive?: boolean }): Promise<TimerHistory | undefined> {
+    const history = this.timerHistoryMap.get(id);
+    if (!history) return undefined;
+    
+    const updatedHistory: TimerHistory = {
+      ...history,
+      ...(data.timestamp ? { timestamp: data.timestamp } : {}),
+      ...(data.isActive !== undefined ? { isActive: data.isActive } : {})
+    };
+    
+    this.timerHistoryMap.set(id, updatedHistory);
+    return updatedHistory;
+  }
+  
+  async getTimerHistoryById(id: number): Promise<TimerHistory | undefined> {
+    return this.timerHistoryMap.get(id);
+  }
+  
+  async getEnhancedTimersByUserId(userId: number, includeArchived: boolean = false): Promise<EnhancedTimer[]> {
+    const timers = await this.getTimersByUserId(userId, includeArchived);
+    const enhancedTimers: EnhancedTimer[] = [];
+    
+    for (const timer of timers) {
+      const history = await this.getTimerHistory(timer.id);
+      const activeHistory = history.filter(h => h.isActive);
+      
+      const lastPressed = activeHistory.length > 0 ? activeHistory[0].timestamp : null;
+      const now = new Date();
+      
+      // Calculate elapsed time in seconds
+      const elapsedTime = lastPressed 
+        ? Math.max(0, Math.floor((now.getTime() - lastPressed.getTime()) / 1000))
+        : 0;
+      
+      // Calculate progress between min and max time (0-100%)
+      let progress = 0;
+      if (timer.maxTime && timer.minTime < timer.maxTime) {
+        if (elapsedTime <= timer.minTime) {
+          progress = (elapsedTime / timer.minTime) * 50; // 0-50% for min time
+        } else if (elapsedTime >= timer.maxTime) {
+          progress = 100;
+        } else {
+          // 50-100% for between min and max time
+          progress = 50 + ((elapsedTime - timer.minTime) / (timer.maxTime - timer.minTime) * 50);
+        }
+      } else if (timer.minTime > 0) {
+        // If no max time, base progress on min time
+        progress = Math.min(100, (elapsedTime / timer.minTime) * 100);
+      }
+      
+      // Check if we can press the button (min time passed)
+      const canPress = elapsedTime >= timer.minTime;
+      
+      enhancedTimers.push({
+        ...timer,
+        lastPressed,
+        elapsedTime,
+        progress,
+        canPress
+      });
+    }
+    
+    return enhancedTimers;
+  }
 
   // Enhanced operations
   async getEnhancedTimers(includeArchived: boolean = false): Promise<EnhancedTimer[]> {
@@ -338,6 +463,15 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
   }
 
   // Timer operations

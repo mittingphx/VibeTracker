@@ -166,4 +166,137 @@ export function setupAuth(app: Express) {
     }
     next();
   });
+
+  // Password recovery - check username and security question
+  app.post("/api/recovery/check", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.body;
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return the security question if set, without revealing answer
+      if (!user.securityQuestion) {
+        return res.status(400).json({ message: "No security question set for this user" });
+      }
+
+      res.json({ 
+        securityQuestion: user.securityQuestion,
+        username: user.username
+      });
+    } catch (error) {
+      console.error("Recovery check error:", error);
+      res.status(500).json({ message: "Recovery check failed" });
+    }
+  });
+
+  // Password recovery - verify security answer
+  app.post("/api/recovery/verify", async (req: Request, res: Response) => {
+    try {
+      const { username, securityAnswer } = req.body;
+      if (!username || !securityAnswer) {
+        return res.status(400).json({ message: "Username and security answer are required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if security answer matches
+      if (user.securityAnswer?.toLowerCase() !== securityAnswer.toLowerCase()) {
+        return res.status(401).json({ message: "Security answer is incorrect" });
+      }
+
+      // Return success if answer is correct
+      res.json({ 
+        success: true, 
+        username: user.username,
+        recoveryPinExists: !!user.recoveryPin
+      });
+    } catch (error) {
+      console.error("Recovery verification error:", error);
+      res.status(500).json({ message: "Recovery verification failed" });
+    }
+  });
+
+  // Password recovery - verify PIN and reset password
+  app.post("/api/recovery/reset", async (req: Request, res: Response) => {
+    try {
+      const { username, recoveryPin, newPassword } = req.body;
+      if (!username || !recoveryPin || !newPassword) {
+        return res.status(400).json({ 
+          message: "Username, recovery PIN, and new password are required" 
+        });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if recovery PIN matches
+      if (user.recoveryPin !== recoveryPin) {
+        return res.status(401).json({ message: "Recovery PIN is incorrect" });
+      }
+
+      // Update user's password
+      const hashedPassword = await hashPassword(newPassword);
+      const updatedUser = await storage.updateUser(user.id, { password: hashedPassword });
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update password" });
+      }
+
+      res.json({ success: true, message: "Password reset successful" });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: "Password reset failed" });
+    }
+  });
+
+  // Set or update security question, answer, and recovery PIN
+  app.post("/api/user/security", async (req: Request, res: Response) => {
+    try {
+      // This route requires authentication
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { securityQuestion, securityAnswer, recoveryPin } = req.body;
+      if (!securityQuestion || !securityAnswer || !recoveryPin) {
+        return res.status(400).json({
+          message: "Security question, answer, and recovery PIN are required"
+        });
+      }
+
+      // Validate PIN (4 digits)
+      if (!/^\d{4}$/.test(recoveryPin)) {
+        return res.status(400).json({ message: "Recovery PIN must be 4 digits" });
+      }
+
+      // Update the user's security info
+      const updatedUser = await storage.updateUser(req.user.id, {
+        securityQuestion,
+        securityAnswer,
+        recoveryPin
+      });
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update security information" });
+      }
+
+      // Return the updated user without sensitive information
+      const { password, securityAnswer: answer, recoveryPin: pin, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      console.error("Security update error:", error);
+      res.status(500).json({ message: "Security update failed" });
+    }
+  });
 }
