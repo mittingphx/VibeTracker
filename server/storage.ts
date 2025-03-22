@@ -38,6 +38,7 @@ export interface IStorage {
   createTimerHistory(history: InsertTimerHistory): Promise<TimerHistory>;
   updateTimerHistory(id: number, isActive: boolean): Promise<TimerHistory | undefined>;
   updateTimerHistoryTimestamp(id: number, timestamp: Date): Promise<TimerHistory | undefined>;
+  updateTimerHistoryFull(id: number, data: { timestamp?: Date; isActive?: boolean }): Promise<TimerHistory | undefined>;
   deleteTimerHistory(id: number): Promise<boolean>;
   
   // Enhanced operations
@@ -497,6 +498,15 @@ export class DatabaseStorage implements IStorage {
   async updateTimerHistoryTimestamp(id: number, timestamp: Date): Promise<TimerHistory | undefined> {
     const [updatedHistory] = await db.update(timerHistory)
       .set({ timestamp })
+      .where(eq(timerHistory.id, id))
+      .returning();
+    
+    return updatedHistory;
+  }
+  
+  async updateTimerHistoryFull(id: number, data: { timestamp?: Date; isActive?: boolean }): Promise<TimerHistory | undefined> {
+    const [updatedHistory] = await db.update(timerHistory)
+      .set(data)
       .where(eq(timerHistory.id, id))
       .returning();
     

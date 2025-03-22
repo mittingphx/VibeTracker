@@ -316,7 +316,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You don't have permission to update this history" });
       }
       
-      const updatedHistory = await storage.updateTimerHistory(id, validatedData.data.isActive);
+      // Update both timestamp and isActive if provided
+      const updateData: { timestamp?: Date; isActive: boolean } = {
+        isActive: validatedData.data.isActive
+      };
+      
+      // If timestamp is provided, add it to the update data
+      if (validatedData.data.timestamp) {
+        updateData.timestamp = validatedData.data.timestamp;
+      }
+      
+      const updatedHistory = await storage.updateTimerHistoryFull(id, updateData);
       
       // Get enhanced timers for this user to return with updated state
       const enhancedTimers = await storage.getEnhancedTimersByUserId(req.user!.id);
