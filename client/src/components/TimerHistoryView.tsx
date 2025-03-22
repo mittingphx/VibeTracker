@@ -68,12 +68,12 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
 
   // Edit history mutation
   const editHistoryMutation = useMutation({
-    mutationFn: async ({ id, timestamp, isActive }: { id: number; timestamp: Date; isActive: boolean }) => {
-      // Make sure isActive is explicitly sent as a boolean
-      // Send timestamp as an ISO string (Zod will parse it to a Date)
+    mutationFn: async ({ id, timestamp }: { id: number; timestamp: Date }) => {
+      // Always hardcode isActive to true, since we only show active entries in the UI
+      // and the server requires this field
       return apiRequest("PATCH", `/api/history/${id}`, { 
         timestamp: timestamp.toISOString(), 
-        isActive: Boolean(isActive) 
+        isActive: true // Hardcoded to true as required by server
       });
     },
     onSuccess: () => {
@@ -157,11 +157,10 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
     const [hours, minutes] = editTime.split(":").map(Number);
     combinedDate.setHours(hours, minutes, 0, 0);
     
-    // Must provide isActive as true (required by the server API)
+    // We don't need to pass isActive anymore since it's hardcoded in the mutation
     editHistoryMutation.mutate({ 
       id: editHistoryId, 
-      timestamp: combinedDate,
-      isActive: true
+      timestamp: combinedDate
     });
   };
 
