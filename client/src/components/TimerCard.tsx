@@ -195,7 +195,7 @@ export default function TimerCard({ timer }: TimerCardProps) {
         <Progress 
           value={timer.progress} 
           className="h-2 mt-2"
-          indicatorColor={progressColor}
+          indicatorStyle={{ backgroundColor: progressColor }}
         />
         
         {/* Min/Max Time Display */}
