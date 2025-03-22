@@ -48,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get timer by ID
-  router.get("/timers/:id", async (req: Request, res: Response) => {
+  router.get("/timers/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -58,6 +58,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timer = await storage.getTimer(id);
       if (!timer) {
         return res.status(404).json({ message: "Timer not found" });
+      }
+      
+      // Check if this timer belongs to the authenticated user
+      if (timer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to access this timer" });
       }
 
       res.json(timer);
@@ -92,11 +97,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update timer
-  router.patch("/timers/:id", async (req: Request, res: Response) => {
+  router.patch("/timers/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid timer ID" });
+      }
+
+      // First check if the timer exists and belongs to the authenticated user
+      const existingTimer = await storage.getTimer(id);
+      if (!existingTimer) {
+        return res.status(404).json({ message: "Timer not found" });
+      }
+      
+      // Verify ownership
+      if (existingTimer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to update this timer" });
       }
 
       // Validate partial data
@@ -107,11 +123,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: validationError.message });
       }
       
-      const updatedTimer = await storage.updateTimer(id, validatedData.data);
-      if (!updatedTimer) {
-        return res.status(404).json({ message: "Timer not found" });
+      // Prevent changing userId
+      if (validatedData.data.userId && validatedData.data.userId !== req.user!.id) {
+        return res.status(400).json({ message: "Cannot change timer ownership" });
       }
       
+      const updatedTimer = await storage.updateTimer(id, validatedData.data);
       res.json(updatedTimer);
     } catch (error) {
       console.error("Error updating timer:", error);
@@ -120,18 +137,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Archive timer (instead of deleting)
-  router.post("/timers/:id/archive", async (req: Request, res: Response) => {
+  router.post("/timers/:id/archive", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid timer ID" });
       }
 
-      const archivedTimer = await storage.archiveTimer(id);
-      if (!archivedTimer) {
+      // First check if the timer exists and belongs to the authenticated user
+      const existingTimer = await storage.getTimer(id);
+      if (!existingTimer) {
         return res.status(404).json({ message: "Timer not found" });
       }
       
+      // Verify ownership
+      if (existingTimer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to archive this timer" });
+      }
+
+      const archivedTimer = await storage.archiveTimer(id);
       res.json(archivedTimer);
     } catch (error) {
       console.error("Error archiving timer:", error);
@@ -140,18 +164,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Restore timer from archive
-  router.post("/timers/:id/restore", async (req: Request, res: Response) => {
+  router.post("/timers/:id/restore", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid timer ID" });
       }
 
-      const restoredTimer = await storage.restoreTimer(id);
-      if (!restoredTimer) {
+      // First check if the timer exists and belongs to the authenticated user
+      const existingTimer = await storage.getTimer(id);
+      if (!existingTimer) {
         return res.status(404).json({ message: "Timer not found" });
       }
       
+      // Verify ownership
+      if (existingTimer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to restore this timer" });
+      }
+
+      const restoredTimer = await storage.restoreTimer(id);
       res.json(restoredTimer);
     } catch (error) {
       console.error("Error restoring timer:", error);
@@ -159,10 +190,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Clear all archived timers
-  router.delete("/timers/archived", async (req: Request, res: Response) => {
+  // Clear all archived timers for the user
+  router.delete("/timers/archived", requireAuth, async (req: Request, res: Response) => {
     try {
-      const count = await storage.clearAllArchivedTimers();
+      const userId = req.user!.id;
+      const count = await storage.clearAllArchivedTimersByUserId(userId);
       res.json({ message: `${count} archived timers deleted successfully` });
     } catch (error) {
       console.error("Error clearing archived timers:", error);
@@ -171,18 +203,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete timer (permanent deletion - keeping for backward compatibility)
-  router.delete("/timers/:id", async (req: Request, res: Response) => {
+  router.delete("/timers/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid timer ID" });
       }
 
-      const success = await storage.deleteTimer(id);
-      if (!success) {
+      // First check if the timer exists and belongs to the authenticated user
+      const existingTimer = await storage.getTimer(id);
+      if (!existingTimer) {
         return res.status(404).json({ message: "Timer not found" });
       }
       
+      // Verify ownership
+      if (existingTimer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to delete this timer" });
+      }
+
+      const success = await storage.deleteTimer(id);
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting timer:", error);
@@ -191,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Record timer press
-  router.post("/timers/:id/press", async (req: Request, res: Response) => {
+  router.post("/timers/:id/press", requireAuth, async (req: Request, res: Response) => {
     try {
       const timerId = parseInt(req.params.id);
       if (isNaN(timerId)) {
@@ -203,14 +242,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Timer not found" });
       }
 
+      // Verify ownership
+      if (timer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to press this timer" });
+      }
+
       // Create history record
       const history = await storage.createTimerHistory({ 
         timerId,
         isActive: true
       });
       
-      // Get updated enhanced timer
-      const enhancedTimers = await storage.getEnhancedTimers();
+      // Get updated enhanced timer for this user
+      const enhancedTimers = await storage.getEnhancedTimersByUserId(req.user!.id);
       const updatedTimer = enhancedTimers.find(t => t.id === timerId);
       
       res.status(201).json({ history, timer: updatedTimer });
