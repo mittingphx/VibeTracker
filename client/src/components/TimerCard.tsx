@@ -177,7 +177,14 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
           <div className="flex-1">
             {/* Timer Label and Actions */}
             <div className="flex justify-between items-center">
-              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
+              <div>
+                <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
+                {timer.category && timer.category !== "Default" && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                    {timer.category}
+                  </span>
+                )}
+              </div>
               
               {/* Timer Actions Dropdown */}
               <DropdownMenu>

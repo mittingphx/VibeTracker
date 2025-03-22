@@ -34,6 +34,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
+  const [category, setCategory] = useState("Default");
   const [minTime, setMinTime] = useState<number | "">("");
   const [minTimeUnit, setMinTimeUnit] = useState<TimeUnit>("hours");
   const [maxTime, setMaxTime] = useState<number | "">("");
@@ -70,6 +71,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
 
       const timerData = {
         label: name,
+        category: category || "Default",
         minTime: minTimeSeconds,
         maxTime: maxTimeSeconds,
         isEnabled: true,
@@ -116,6 +118,19 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Coffee Break"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="timer-category" className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </Label>
+            <Input
+              id="timer-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g., Health, Productivity, Habits"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
           </div>

@@ -19,6 +19,7 @@ export const timers = pgTable("timers", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(), // Associate timer with a user
   label: text("label").notNull(),
+  category: text("category").default("Default"), // Category for organization
   minTime: integer("min_time").notNull().default(0), // Min time in seconds
   maxTime: integer("max_time"), // Max time in seconds (optional)
   isEnabled: boolean("is_enabled").notNull().default(true),
