@@ -5,7 +5,7 @@ import { insertTimerSchema, insertTimerHistorySchema } from "@shared/schema";
 import { format } from "date-fns";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { setupAuth } from "./auth";
+import { setupAuth } from "./auth-fixed";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication before route registration

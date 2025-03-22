@@ -7,6 +7,8 @@ import {
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
 
+import session from "express-session";
+
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
@@ -36,6 +38,9 @@ export interface IStorage {
   
   // Database operations
   initializeDatabase(): Promise<void>;
+  
+  // Session store for authentication
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
