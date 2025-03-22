@@ -57,7 +57,11 @@ const getBestUnit = (seconds: number): TimeUnit => {
 export default function SettingsView({ onClose, highlightedTimerId }: SettingsViewProps) {
   const { timers, isLoading } = useTimers();
   const { toast } = useToast();
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check for stored preference in localStorage
+    const storedTheme = localStorage.getItem('theme');
+    return storedTheme === 'dark';
+  });
   const [notifications, setNotifications] = useState(true);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
@@ -66,6 +70,16 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
   
+  // Apply dark mode when component mounts
+  useEffect(() => {
+    // Apply stored theme when component mounts
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   // Load archived timers when Settings view opens
   useEffect(() => {
     const fetchArchivedTimers = async () => {
@@ -292,9 +306,9 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-100 z-20 flex flex-col">
-      <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200">
-        <h2 className="text-2xl font-bold">Settings</h2>
+    <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 z-20 flex flex-col">
+      <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
         <Button variant="ghost" className="text-blue-500" onClick={onClose}>
           Done
         </Button>
@@ -302,8 +316,8 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       
       <div className="flex-1 overflow-auto">
         {/* Timer Settings */}
-        <div className="mx-4 mt-4 bg-white rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200">Timer Settings</h3>
+        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Timer Settings</h3>
           
           {isLoading ? (
             <div className="p-4 flex justify-center">
@@ -315,10 +329,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
             </div>
           ) : (
             timers.map((timer) => (
-              <div id={`timer-${timer.id}`} key={timer.id} className="border-b border-gray-200 last:border-0">
+              <div id={`timer-${timer.id}`} key={timer.id} className="border-b border-gray-200 dark:border-gray-700 last:border-0">
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="font-medium">{timer.label}</span>
+                    <span className="font-medium dark:text-white">{timer.label}</span>
                     <Switch
                       checked={timer.isEnabled}
                       onCheckedChange={(checked) => handleToggleTimer(timer.id, checked)}
@@ -516,7 +530,20 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
               <span>Dark Mode</span>
               <Switch 
                 checked={darkMode}
-                onCheckedChange={setDarkMode}
+                onCheckedChange={(checked) => {
+                  // Update state
+                  setDarkMode(checked);
+                  
+                  // Store preference in localStorage
+                  localStorage.setItem('theme', checked ? 'dark' : 'light');
+                  
+                  // Apply to document
+                  if (checked) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                }}
               />
             </div>
             
