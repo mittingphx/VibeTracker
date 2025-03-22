@@ -6,6 +6,7 @@ import SettingsView from "@/components/SettingsView";
 import AboutView from "@/components/AboutView";
 import NewTimerModal from "@/components/NewTimerModal";
 import TimerHistoryView from "@/components/TimerHistoryView";
+import SecuritySetupDialog from "@/components/SecuritySetupDialog";
 import { useTimers } from "@/hooks/useTimers";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
@@ -25,6 +26,9 @@ export default function Home() {
   } = useTimers();
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Security setup dialog state
+  const [showSecuritySetup, setShowSecuritySetup] = useState(false);
 
   // Handle errors during data loading
   if (error) {
@@ -42,6 +46,13 @@ export default function Home() {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [historyTimerId, setHistoryTimerId] = useState<number | null>(null);
   const [historyTimerName, setHistoryTimerName] = useState<string>("");
+  
+  // Check if user has security setup and show dialog if needed
+  useEffect(() => {
+    if (user && !user.securityQuestion) {
+      setShowSecuritySetup(true);
+    }
+  }, [user]);
   
   // Auto-launch timer creation modal when logged in with no timers
   useEffect(() => {
@@ -165,6 +176,22 @@ export default function Home() {
         <NewTimerModal
           open={showNewTimerModal}
           onClose={() => setShowNewTimerModal(false)}
+        />
+      )}
+
+      {/* Security Setup Dialog */}
+      {user && showSecuritySetup && (
+        <SecuritySetupDialog
+          open={showSecuritySetup}
+          onOpenChange={setShowSecuritySetup}
+          user={user}
+          onComplete={() => {
+            setShowSecuritySetup(false);
+            toast({
+              title: "Security Setup Complete",
+              description: "Your account recovery options have been successfully configured.",
+            });
+          }}
         />
       )}
     </div>
