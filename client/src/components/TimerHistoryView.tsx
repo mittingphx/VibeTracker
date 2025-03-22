@@ -71,8 +71,13 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
     mutationFn: async ({ id, timestamp }: { id: number; timestamp: Date }) => {
       // Always hardcode isActive to true, since we only show active entries in the UI
       // and the server requires this field
-      return apiRequest("PATCH", `/api/history/${id}`, { 
-        timestamp: timestamp.toISOString(), 
+      console.log("Sending patch request with body:", {
+        timestamp: timestamp.toISOString(),
+        isActive: true
+      });
+      
+      return apiRequest("PATCH", `/api/history/${id}`, {
+        timestamp: timestamp.toISOString(),
         isActive: true // Hardcoded to true as required by server
       });
     },

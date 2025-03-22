@@ -284,6 +284,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid history ID" });
       }
 
+      // Debug logging
+      console.log("PATCH /history/:id received request body:", JSON.stringify(req.body));
+
       // Validate required data
       const schema = z.object({ 
         isActive: z.boolean(),
@@ -292,6 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = schema.safeParse(req.body);
       
       if (!validatedData.success) {
+        console.log("Validation failed:", JSON.stringify(validatedData.error));
         return res.status(400).json({ message: "isActive field is required and must be a boolean" });
       }
       
