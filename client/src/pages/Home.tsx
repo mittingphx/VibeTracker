@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { preloadSounds } from "@/lib/soundEffects";
+import { getThemePreference } from "@/lib/themeUtils";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
@@ -57,11 +58,14 @@ export default function Home() {
     };
   }, []);
 
+  // Determine if dark mode is active
+  const isDarkMode = getThemePreference();
+  
   return (
-    <div className="max-w-md mx-auto bg-gray-100 min-h-screen flex flex-col">
+    <div className={`max-w-md mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'} min-h-screen flex flex-col`}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-gray-100 pt-12 pb-2 px-4 flex justify-between items-center border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900">VibeTimer</h1>
+      <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-12 pb-2 px-4 flex justify-between items-center border-b`}>
+        <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>VibeTimer</h1>
         <Button
           onClick={() => setShowNewTimerModal(true)}
           size="icon"
@@ -80,7 +84,7 @@ export default function Home() {
             </div>
           ) : timers.length === 0 ? (
             <div className="text-center py-10">
-              <p className="text-gray-500">No timers yet. Add your first timer!</p>
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No timers yet. Add your first timer!</p>
             </div>
           ) : (
             timers.map((timer) => (

@@ -11,6 +11,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { playSound } from "@/lib/soundEffects";
 import { useTimerHistory } from "@/hooks/useTimerHistory";
+import { getThemePreference } from "@/lib/themeUtils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,9 +142,12 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
     }
   };
 
+  // Get theme preference
+  const isDarkMode = getThemePreference();
+  
   // Determine colors based on progress and timer state
   let progressColor = timer.color;
-  let timeTextColor = "text-gray-900";
+  let timeTextColor = isDarkMode ? "text-gray-100" : "text-gray-900";
   
   if (!timer.canPress) {
     progressColor = "#FF3B30"; // iOS red
@@ -166,18 +170,18 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
   const buttonDisabled = isUpdating || !timer.canPress || !timer.isEnabled;
 
   return (
-    <Card className="mb-4 overflow-hidden shadow-sm bg-white">
+    <Card className={`mb-4 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
       <CardContent className="px-5 py-4 flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
             {/* Timer Label and Actions */}
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">{timer.label}</h2>
+              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
               
               {/* Timer Actions Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500">
+                  <Button variant="ghost" size="icon" className={`h-8 w-8 ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -243,7 +247,7 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
             </p>
             
             {/* Last Clicked Date */}
-            <p className="text-xs text-gray-600 mt-1">
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
               {timer.lastPressed 
                 ? `Last: ${formatDistanceToNow(timer.lastPressed, { addSuffix: true })}` 
                 : "No records yet"}
@@ -256,14 +260,14 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-gray-600 hover:text-gray-800 p-1 h-8 w-8"
+              className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
               onClick={handleUndo}
               disabled={!canUndo || isUpdating || isUndoing || isRedoing}
             >
               <Undo2 className="h-4 w-4" />
               {isUndoing && (
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
                 </span>
               )}
             </Button>
@@ -288,14 +292,14 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-gray-600 hover:text-gray-800 p-1 mt-1 h-8 w-8"
+              className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 mt-1 h-8 w-8`}
               onClick={handleRedo}
               disabled={!canRedo || isUpdating || isUndoing || isRedoing}
             >
               <Redo2 className="h-4 w-4" />
               {isRedoing && (
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
                 </span>
               )}
             </Button>
@@ -310,7 +314,7 @@ export default function TimerCard({ timer, onArchive }: TimerCardProps) {
         />
         
         {/* Min/Max Time Display */}
-        <div className="flex justify-between text-xs text-gray-600 mt-1">
+        <div className={`flex justify-between text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
           <span>Min: {formatTimeDuration(timer.minTime, true)}</span>
           {timer.maxTime && (
             <span>Target: {formatTimeDuration(timer.maxTime, true)}</span>
