@@ -3,6 +3,7 @@ import TimerCard from "@/components/TimerCard";
 import TabBar from "@/components/TabBar";
 import ChartView from "@/components/ChartView";
 import SettingsView from "@/components/SettingsView";
+import AboutView from "@/components/AboutView";
 import NewTimerModal from "@/components/NewTimerModal";
 import TimerHistoryView from "@/components/TimerHistoryView";
 import { useTimers } from "@/hooks/useTimers";
@@ -14,7 +15,7 @@ import { getThemePreference } from "@/lib/themeUtils";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
+  const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings" | "about">("timers");
   const [showNewTimerModal, setShowNewTimerModal] = useState(false);
   const { 
     timers, 
@@ -152,9 +153,12 @@ export default function Home() {
           highlightedTimerId={highlightedTimerId}
         />
       }
+      
+      {/* About View */}
+      {activeTab === "about" && <AboutView />}
 
       {/* Bottom Tab Bar */}
-      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
 
       {/* New Timer Modal */}
       {showNewTimerModal && (

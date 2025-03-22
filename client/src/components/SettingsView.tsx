@@ -13,6 +13,7 @@ import { getThemePreference, applyTheme } from "@/lib/themeUtils";
 import { Trash, RefreshCcw, Archive, Download, Upload, Github, Info, User, LogIn, LogOut } from "lucide-react";
 import { Timer } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Collapsible,
   CollapsibleContent,
@@ -431,9 +432,11 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
     });
   };
 
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="fixed inset-0 bg-gray-600/20 dark:bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4">
-      <div className="flex flex-col w-full max-w-2xl bg-white dark:bg-gray-900 shadow-2xl h-[95vh] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-16 pb-16' : 'fixed inset-0 bg-gray-600/20 dark:bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
+      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} bg-white dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700`}>
         <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
           <Button variant="ghost" className="text-blue-500" onClick={onClose}>
@@ -668,47 +671,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
             )}
           </div>
           
-          {/* Credits */}
-          <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-            <Collapsible
-              open={expandedCredits}
-              onOpenChange={setExpandedCredits}
-            >
-              <CollapsibleTrigger asChild>
-                <div className="flex justify-between items-center p-4 cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-medium dark:text-white">
-                    <Info className="w-5 h-5 inline-block mr-2 text-blue-500" />
-                    About VibeTimer
-                  </h3>
-                  <div className="text-gray-400">
-                    {expandedCredits ? "▲" : "▼"}
-                  </div>
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="p-4 space-y-3 text-sm">
-                <p className="dark:text-gray-300">
-                  VibeTimer is a productivity app that helps you track time intervals between activities. 
-                  It's perfect for habit tracking, time management, and creating routines.
-                </p>
-                <p className="dark:text-gray-300">
-                  Built with React, TypeScript, and PostgreSQL. Created on Replit.
-                </p>
-                <div className="flex items-center mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={() => window.open("https://github.com/replit", "_blank")}
-                  >
-                    <Github className="w-4 h-4" /> GitHub
-                  </Button>
-                </div>
-                <div className="text-xs text-gray-500 mt-3 dark:text-gray-400">
-                  © {new Date().getFullYear()} VibeTimer. All rights reserved.
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
+
           
           {/* User Authentication & Data Management */}
           <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">

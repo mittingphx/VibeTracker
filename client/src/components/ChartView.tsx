@@ -114,8 +114,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
   } : VictoryTheme.material;
   
   return (
-    <div className={`fixed inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-gray-600/20'} backdrop-blur-sm z-20 flex justify-center items-center p-4`}>
-      <div className={`flex flex-col w-full max-w-2xl ${isDarkMode ? 'bg-gray-900' : 'bg-white'} shadow-2xl h-[95vh] rounded-xl overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-16 pb-16' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
+      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {/* Header */}
         <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Charts</h1>
