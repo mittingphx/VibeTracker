@@ -1,13 +1,25 @@
-import express, { type Express, Request, Response } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { Server, createServer } from "http";
 import { storage } from "./storage";
 import { insertTimerSchema, insertTimerHistorySchema } from "@shared/schema";
 import { format } from "date-fns";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication before route registration
+  setupAuth(app);
+  
   const router = express.Router();
+  
+  // Authentication middleware for protected routes
+  const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
 
   // Get all enhanced timers
   router.get("/timers", async (req: Request, res: Response) => {
