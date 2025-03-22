@@ -10,6 +10,7 @@ import { PlusIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { preloadSounds } from "@/lib/soundEffects";
 import { getThemePreference } from "@/lib/themeUtils";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"timers" | "charts" | "settings">("timers");
@@ -21,6 +22,7 @@ export default function Home() {
     archiveTimer 
   } = useTimers();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Handle errors during data loading
   if (error) {
@@ -33,6 +35,13 @@ export default function Home() {
   
   // State to store the timer ID to highlight in settings
   const [highlightedTimerId, setHighlightedTimerId] = useState<number | null>(null);
+  
+  // Auto-launch timer creation modal when logged in with no timers
+  useEffect(() => {
+    if (user && !isLoading && timers.length === 0) {
+      setShowNewTimerModal(true);
+    }
+  }, [user, isLoading, timers.length]);
   
   // Initialize app and handle global events
   useEffect(() => {
