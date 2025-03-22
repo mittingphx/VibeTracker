@@ -5,9 +5,11 @@ import {
   type EnhancedTimer
 } from "@shared/schema";
 import { db } from "./db";
+import { pool } from "./db";
 import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
-
 import session from "express-session";
+import createMemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 
 export interface IStorage {
   // User operations
@@ -51,6 +53,7 @@ export class MemStorage implements IStorage {
   private timerId: number;
   private historyId: number;
   private initialized: boolean;
+  public sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -60,6 +63,12 @@ export class MemStorage implements IStorage {
     this.timerId = 1;
     this.historyId = 1;
     this.initialized = false;
+    
+    // Create memory store for sessions
+    const MemoryStore = createMemoryStore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
     
     // Initialize data asynchronously
     this.initializeData();
@@ -385,10 +394,18 @@ export class MemStorage implements IStorage {
 
 export class DatabaseStorage implements IStorage {
   private initialized: boolean = false;
+  public sessionStore: session.Store;
 
   constructor() {
     // We'll initialize database in a separate method
     this.initialized = false;
+
+    // Create PostgreSQL session store
+    const PgStore = connectPgSimple(session);
+    this.sessionStore = new PgStore({
+      pool,
+      createTableIfMissing: true
+    });
   }
 
   async initializeDatabase(): Promise<void> {
