@@ -14,11 +14,15 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
 
   // Timer operations
-  getTimers(): Promise<Timer[]>;
+  getTimers(includeArchived?: boolean): Promise<Timer[]>;
+  getArchivedTimers(): Promise<Timer[]>;
   getTimer(id: number): Promise<Timer | undefined>;
   createTimer(timer: InsertTimer): Promise<Timer>;
   updateTimer(id: number, timer: Partial<InsertTimer>): Promise<Timer | undefined>;
   deleteTimer(id: number): Promise<boolean>;
+  archiveTimer(id: number): Promise<Timer | undefined>;
+  restoreTimer(id: number): Promise<Timer | undefined>;
+  clearAllArchivedTimers(): Promise<number>; // Returns number of deleted timers
   
   // Timer history operations
   getTimerHistory(timerId: number): Promise<TimerHistory[]>;
@@ -27,7 +31,7 @@ export interface IStorage {
   updateTimerHistory(id: number, isActive: boolean): Promise<TimerHistory | undefined>;
   
   // Enhanced operations
-  getEnhancedTimers(): Promise<EnhancedTimer[]>;
+  getEnhancedTimers(includeArchived?: boolean): Promise<EnhancedTimer[]>;
   getTimerHistoryByDateRange(startDate: Date, endDate: Date): Promise<TimerHistory[]>;
   
   // Database operations
@@ -207,7 +211,8 @@ export class MemStorage implements IStorage {
       isEnabled: insertTimer.isEnabled ?? true,
       playSound: insertTimer.playSound ?? true,
       color: insertTimer.color ?? "#007AFF",
-      createdAt: now
+      createdAt: now,
+      isArchived: insertTimer.isArchived ?? false
     };
     this.timersMap.set(id, timer);
     return timer;
@@ -468,13 +473,51 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Timer operations
-  async getTimers(): Promise<Timer[]> {
-    return db.select().from(timers);
+  async getTimers(includeArchived: boolean = false): Promise<Timer[]> {
+    if (includeArchived) {
+      return db.select().from(timers);
+    } else {
+      return db.select()
+        .from(timers)
+        .where(eq(timers.isArchived, false));
+    }
+  }
+  
+  async getArchivedTimers(): Promise<Timer[]> {
+    return db.select()
+      .from(timers)
+      .where(eq(timers.isArchived, true));
   }
 
   async getTimer(id: number): Promise<Timer | undefined> {
     const [timer] = await db.select().from(timers).where(eq(timers.id, id));
     return timer;
+  }
+  
+  async archiveTimer(id: number): Promise<Timer | undefined> {
+    const [updatedTimer] = await db.update(timers)
+      .set({ isArchived: true })
+      .where(eq(timers.id, id))
+      .returning();
+    
+    return updatedTimer;
+  }
+  
+  async restoreTimer(id: number): Promise<Timer | undefined> {
+    const [updatedTimer] = await db.update(timers)
+      .set({ isArchived: false })
+      .where(eq(timers.id, id))
+      .returning();
+    
+    return updatedTimer;
+  }
+  
+  async clearAllArchivedTimers(): Promise<number> {
+    const result = await db.delete(timers)
+      .where(eq(timers.isArchived, true))
+      .returning();
+    
+    return result.length;
   }
 
   async createTimer(insertTimer: InsertTimer): Promise<Timer> {
@@ -536,8 +579,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Enhanced operations
-  async getEnhancedTimers(): Promise<EnhancedTimer[]> {
-    const allTimers = await this.getTimers();
+  async getEnhancedTimers(includeArchived: boolean = false): Promise<EnhancedTimer[]> {
+    const allTimers = await this.getTimers(includeArchived);
     const enhancedTimers: EnhancedTimer[] = [];
     
     for (const timer of allTimers) {

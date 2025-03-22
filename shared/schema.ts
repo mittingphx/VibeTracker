@@ -24,6 +24,7 @@ export const timers = pgTable("timers", {
   playSound: boolean("play_sound").notNull().default(true),
   color: text("color").notNull().default("#007AFF"), // iOS blue default
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  isArchived: boolean("is_archived").notNull().default(false), // Whether timer is archived
 });
 
 export const insertTimerSchema = createInsertSchema(timers).omit({
