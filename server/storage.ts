@@ -282,7 +282,7 @@ export class MemStorage implements IStorage {
       
       // Calculate elapsed time in seconds
       const elapsedTime = lastPressed 
-        ? Math.floor((now.getTime() - lastPressed.getTime()) / 1000) 
+        ? Math.max(0, Math.floor((now.getTime() - lastPressed.getTime()) / 1000))
         : 0;
       
       // Calculate progress between min and max time (0-100%)
@@ -558,7 +558,7 @@ export class DatabaseStorage implements IStorage {
       
       // Calculate elapsed time in seconds
       const elapsedTime = lastPressed 
-        ? Math.floor((now.getTime() - lastPressed.getTime()) / 1000) 
+        ? Math.max(0, Math.floor((now.getTime() - lastPressed.getTime()) / 1000))
         : 0;
       
       // Calculate progress between min and max time (0-100%)
