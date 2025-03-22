@@ -466,6 +466,11 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                   </div>
                   
                   <div className="space-y-2">
+                    {timer.category && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                        Category: {timer.category}
+                      </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Minimum Time</span>
                       <span className="text-sm font-medium">
@@ -579,6 +584,20 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                         </Label>
                       </div>
                       
+                      <div>
+                        <Label htmlFor={`category-${timer.id}`} className="block text-sm font-medium mb-1">
+                          Category (optional)
+                        </Label>
+                        <Input
+                          id={`category-${timer.id}`}
+                          type="text"
+                          value={editCategory}
+                          onChange={(e) => setEditCategory(e.target.value)}
+                          placeholder="e.g., Health, Work, Personal"
+                          className="w-full"
+                        />
+                      </div>
+                      
                       <Button 
                         className="w-full bg-blue-500"
                         onClick={() => handleSaveTimerSettings(timer.id)}
@@ -628,6 +647,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                     <div>
                       <h4 className="font-medium">{timer.label}</h4>
                       <div className="text-sm text-gray-500 mt-1">
+                        {timer.category && <span>Category: {timer.category} • </span>}
                         Min time: {formatTimeDuration(timer.minTime, true)}
                         {timer.maxTime ? ` • Target: ${formatTimeDuration(timer.maxTime, true)}` : ''}
                       </div>
