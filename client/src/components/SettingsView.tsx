@@ -90,20 +90,25 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
     fetchArchivedTimers();
   }, [toast]);
   
-  // Auto-expand the highlighted timer (if provided)
+  // Auto-expand the highlighted timer (if provided) - only once when highlightedTimerId changes
   useEffect(() => {
-    if (highlightedTimerId && !isLoading) {
-      handleExpandTimer(highlightedTimerId);
+    // Only run this effect once per highlightedTimerId value
+    const timer_id = highlightedTimerId;
+    
+    if (timer_id && !isLoading) {
+      // Expand the timer
+      handleExpandTimer(timer_id);
       
       // Scroll to the highlighted timer with smooth animation
       setTimeout(() => {
-        const timerElement = document.getElementById(`timer-${highlightedTimerId}`);
+        const timerElement = document.getElementById(`timer-${timer_id}`);
         if (timerElement) {
           timerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
     }
-  }, [highlightedTimerId, isLoading, timers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightedTimerId, isLoading]);
   
   // State for editing timer settings
   const [editMinTime, setEditMinTime] = useState<number>(0);
