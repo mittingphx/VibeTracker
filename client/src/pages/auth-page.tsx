@@ -214,7 +214,13 @@ export default function AuthPage() {
 
   const onRegisterSubmit = (data: z.infer<typeof registerSchema>) => {
     const { confirmPassword, ...userData } = data;
+    // Include security information for account recovery
     registerMutation.mutate(userData);
+    toast({
+      title: "Security information saved",
+      description: "Be sure to remember your security question, answer, and PIN for account recovery.",
+      variant: "default",
+    });
   };
 
   if (isLoading) {
@@ -469,6 +475,54 @@ export default function AuthPage() {
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
                           <Input type="password" placeholder="Confirm your password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="securityQuestion"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Security Question</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Example: What was your first pet's name?" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="securityAnswer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Security Answer</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your answer" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="recoveryPin"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Recovery PIN (4 digits)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Set a 4-digit PIN" 
+                            {...field} 
+                            maxLength={4}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
