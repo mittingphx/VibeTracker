@@ -178,7 +178,8 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
   }
 
   // Allow first-time presses even when canPress is false, but button still disabled if timer is disabled
-  const buttonDisabled = isUpdating || (!timer.canPress && timer.lastPressed !== null) || !timer.isEnabled;
+  // Using Boolean(timer.lastPressed) to handle Date | null type properly in TypeScript
+  const buttonDisabled = isUpdating || (!timer.canPress && Boolean(timer.lastPressed)) || !timer.isEnabled;
 
   return (
     <Card className={`mb-4 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -207,7 +208,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={handleTimerPress}
-                    disabled={(!timer.canPress && timer.lastPressed) || !timer.isEnabled}
+                    disabled={(!timer.canPress && Boolean(timer.lastPressed)) || !timer.isEnabled}
                   >
                     <Clock className="mr-2 h-4 w-4" />
                     <span>Press Timer</span>
