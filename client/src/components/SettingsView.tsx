@@ -432,408 +432,410 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 z-20 flex flex-col">
-      <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
-        <Button variant="ghost" className="text-blue-500" onClick={onClose}>
-          Done
-        </Button>
-      </header>
-      
-      <div className="flex-1 overflow-auto">
-        {/* Timer Settings */}
-        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Timer Settings</h3>
-          
-          {isLoading ? (
-            <div className="p-4 flex justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-            </div>
-          ) : timers.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              No timers available
-            </div>
-          ) : (
-            timers.map((timer) => (
-              <div id={`timer-${timer.id}`} key={timer.id} className="border-b border-gray-200 dark:border-gray-700 last:border-0">
-                <div className="p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-medium dark:text-white">{timer.label}</span>
-                    <Switch
-                      checked={timer.isEnabled}
-                      onCheckedChange={(checked) => handleToggleTimer(timer.id, checked)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {timer.category && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                        Category: {timer.category}
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Minimum Time</span>
-                      <span className="text-sm font-medium">
-                        {formatTimeDuration(timer.minTime, true)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Target Time</span>
-                      <span className="text-sm font-medium">
-                        {timer.maxTime ? formatTimeDuration(timer.maxTime, true) : "None"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Sound Alert</span>
+    <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 z-20 flex justify-center">
+      <div className="flex flex-col w-full max-w-2xl shadow-xl h-full overflow-hidden">
+        <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
+          <Button variant="ghost" className="text-blue-500" onClick={onClose}>
+            Done
+          </Button>
+        </header>
+        
+        <div className="flex-1 overflow-auto">
+          {/* Timer Settings */}
+          <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Timer Settings</h3>
+            
+            {isLoading ? (
+              <div className="p-4 flex justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+              </div>
+            ) : timers.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No timers available
+              </div>
+            ) : (
+              timers.map((timer) => (
+                <div id={`timer-${timer.id}`} key={timer.id} className="border-b border-gray-200 dark:border-gray-700 last:border-0">
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium dark:text-white">{timer.label}</span>
                       <Switch
-                        checked={timer.playSound}
-                        onCheckedChange={(checked) => handleToggleSoundAlert(timer.id, checked)}
+                        checked={timer.isEnabled}
+                        onCheckedChange={(checked) => handleToggleTimer(timer.id, checked)}
                       />
                     </div>
-                    <div className="flex gap-2 mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleExpandTimer(timer.id)}
-                      >
-                        {expandedTimerId === timer.id ? "Cancel" : "Edit Settings"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center"
-                        onClick={() => handleArchiveTimer(timer.id)}
-                      >
-                        <Archive className="w-4 h-4" />
-                      </Button>
+                    
+                    <div className="space-y-2">
+                      {timer.category && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                          Category: {timer.category}
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Minimum Time</span>
+                        <span className="text-sm font-medium">
+                          {formatTimeDuration(timer.minTime, true)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Target Time</span>
+                        <span className="text-sm font-medium">
+                          {timer.maxTime ? formatTimeDuration(timer.maxTime, true) : "None"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Sound Alert</span>
+                        <Switch
+                          checked={timer.playSound}
+                          onCheckedChange={(checked) => handleToggleSoundAlert(timer.id, checked)}
+                        />
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleExpandTimer(timer.id)}
+                        >
+                          {expandedTimerId === timer.id ? "Cancel" : "Edit Settings"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center"
+                          onClick={() => handleArchiveTimer(timer.id)}
+                        >
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Expanded settings for editing */}
+                  {expandedTimerId === timer.id && (
+                    <div className="p-4 bg-gray-50">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor={`min-time-${timer.id}`} className="block text-sm font-medium mb-1">
+                            Minimum Time
+                          </Label>
+                          <div className="flex space-x-2">
+                            <Input
+                              id={`min-time-${timer.id}`}
+                              type="number"
+                              min="0"
+                              value={editMinTime}
+                              onChange={(e) => setEditMinTime(Number(e.target.value))}
+                              className="w-1/2"
+                            />
+                            <Select
+                              value={editMinTimeUnit}
+                              onValueChange={(value) => setEditMinTimeUnit(value as TimeUnit)}
+                            >
+                              <SelectTrigger className="w-1/2">
+                                <SelectValue placeholder="Select unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="minutes">Minutes</SelectItem>
+                                <SelectItem value="hours">Hours</SelectItem>
+                                <SelectItem value="days">Days</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`max-time-${timer.id}`} className="block text-sm font-medium mb-1">
+                            Target Time (leave 0 for none)
+                          </Label>
+                          <div className="flex space-x-2">
+                            <Input
+                              id={`max-time-${timer.id}`}
+                              type="number"
+                              min="0"
+                              value={editMaxTime}
+                              onChange={(e) => setEditMaxTime(Number(e.target.value))}
+                              className="w-1/2"
+                            />
+                            <Select
+                              value={editMaxTimeUnit}
+                              onValueChange={(value) => setEditMaxTimeUnit(value as TimeUnit)}
+                            >
+                              <SelectTrigger className="w-1/2">
+                                <SelectValue placeholder="Select unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="minutes">Minutes</SelectItem>
+                                <SelectItem value="hours">Hours</SelectItem>
+                                <SelectItem value="days">Days</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            id={`sound-alert-${timer.id}`}
+                            checked={editPlaySound}
+                            onCheckedChange={setEditPlaySound}
+                          />
+                          <Label htmlFor={`sound-alert-${timer.id}`}>
+                            Play sound when minimum time is reached
+                          </Label>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`category-${timer.id}`} className="block text-sm font-medium mb-1">
+                            Category (optional)
+                          </Label>
+                          <Input
+                            id={`category-${timer.id}`}
+                            type="text"
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value)}
+                            placeholder="e.g., Health, Work, Personal"
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <Button 
+                          className="w-full bg-blue-500"
+                          onClick={() => handleSaveTimerSettings(timer.id)}
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Expanded settings for editing */}
-                {expandedTimerId === timer.id && (
-                  <div className="p-4 bg-gray-50">
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor={`min-time-${timer.id}`} className="block text-sm font-medium mb-1">
-                          Minimum Time
-                        </Label>
-                        <div className="flex space-x-2">
-                          <Input
-                            id={`min-time-${timer.id}`}
-                            type="number"
-                            min="0"
-                            value={editMinTime}
-                            onChange={(e) => setEditMinTime(Number(e.target.value))}
-                            className="w-1/2"
-                          />
-                          <Select
-                            value={editMinTimeUnit}
-                            onValueChange={(value) => setEditMinTimeUnit(value as TimeUnit)}
-                          >
-                            <SelectTrigger className="w-1/2">
-                              <SelectValue placeholder="Select unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="minutes">Minutes</SelectItem>
-                              <SelectItem value="hours">Hours</SelectItem>
-                              <SelectItem value="days">Days</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`max-time-${timer.id}`} className="block text-sm font-medium mb-1">
-                          Target Time (leave 0 for none)
-                        </Label>
-                        <div className="flex space-x-2">
-                          <Input
-                            id={`max-time-${timer.id}`}
-                            type="number"
-                            min="0"
-                            value={editMaxTime}
-                            onChange={(e) => setEditMaxTime(Number(e.target.value))}
-                            className="w-1/2"
-                          />
-                          <Select
-                            value={editMaxTimeUnit}
-                            onValueChange={(value) => setEditMaxTimeUnit(value as TimeUnit)}
-                          >
-                            <SelectTrigger className="w-1/2">
-                              <SelectValue placeholder="Select unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="minutes">Minutes</SelectItem>
-                              <SelectItem value="hours">Hours</SelectItem>
-                              <SelectItem value="days">Days</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id={`sound-alert-${timer.id}`}
-                          checked={editPlaySound}
-                          onCheckedChange={setEditPlaySound}
-                        />
-                        <Label htmlFor={`sound-alert-${timer.id}`}>
-                          Play sound when minimum time is reached
-                        </Label>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor={`category-${timer.id}`} className="block text-sm font-medium mb-1">
-                          Category (optional)
-                        </Label>
-                        <Input
-                          id={`category-${timer.id}`}
-                          type="text"
-                          value={editCategory}
-                          onChange={(e) => setEditCategory(e.target.value)}
-                          placeholder="e.g., Health, Work, Personal"
-                          className="w-full"
-                        />
-                      </div>
-                      
-                      <Button 
-                        className="w-full bg-blue-500"
-                        onClick={() => handleSaveTimerSettings(timer.id)}
-                      >
-                        Save Changes
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-        
-        {/* Archives */}
-        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Archives</h3>
-          
-          {/* Archive Actions */}
-          <div className="p-4 flex space-x-2">
-            {archivedTimers.length > 0 && (
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                className="flex items-center"
-                onClick={handleClearAllArchived}
-              >
-                <Trash className="w-4 h-4 mr-1" /> Clear All
-              </Button>
+              ))
             )}
           </div>
           
-          {/* Archived Timers List */}
-          {isLoadingArchived ? (
-            <div className="p-4 flex justify-center">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-            </div>
-          ) : archivedTimers.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              No archived timers
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {archivedTimers.map((timer) => (
-                <div key={timer.id} className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">{timer.label}</h4>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {timer.category && <span>Category: {timer.category} • </span>}
-                        Min time: {formatTimeDuration(timer.minTime, true)}
-                        {timer.maxTime ? ` • Target: ${formatTimeDuration(timer.maxTime, true)}` : ''}
-                      </div>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center"
-                      onClick={() => handleRestoreTimer(timer.id)}
-                    >
-                      <RefreshCcw className="w-4 h-4 mr-1" /> Restore
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Credits */}
-        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-          <Collapsible
-            open={expandedCredits}
-            onOpenChange={setExpandedCredits}
-          >
-            <CollapsibleTrigger asChild>
-              <div className="flex justify-between items-center p-4 cursor-pointer border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-medium dark:text-white">
-                  <Info className="w-5 h-5 inline-block mr-2 text-blue-500" />
-                  About VibeTimer
-                </h3>
-                <div className="text-gray-400">
-                  {expandedCredits ? "▲" : "▼"}
-                </div>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="p-4 space-y-3 text-sm">
-              <p className="dark:text-gray-300">
-                VibeTimer is a productivity app that helps you track time intervals between activities. 
-                It's perfect for habit tracking, time management, and creating routines.
-              </p>
-              <p className="dark:text-gray-300">
-                Built with React, TypeScript, and PostgreSQL. Created on Replit.
-              </p>
-              <div className="flex items-center mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => window.open("https://github.com/replit", "_blank")}
+          {/* Archives */}
+          <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">Archives</h3>
+            
+            {/* Archive Actions */}
+            <div className="p-4 flex space-x-2">
+              {archivedTimers.length > 0 && (
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="flex items-center"
+                  onClick={handleClearAllArchived}
                 >
-                  <Github className="w-4 h-4" /> GitHub
+                  <Trash className="w-4 h-4 mr-1" /> Clear All
                 </Button>
+              )}
+            </div>
+            
+            {/* Archived Timers List */}
+            {isLoadingArchived ? (
+              <div className="p-4 flex justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
               </div>
-              <div className="text-xs text-gray-500 mt-3 dark:text-gray-400">
-                © {new Date().getFullYear()} VibeTimer. All rights reserved.
+            ) : archivedTimers.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No archived timers
               </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-        
-        {/* User Authentication & Data Management */}
-        <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">
-            <User className="w-5 h-5 inline-block mr-2 text-blue-500" />
-            Account & Data
-          </h3>
-          
-          <div className="p-4 space-y-4">
-            {/* Authentication */}
-            <div>
-              {user ? (
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium dark:text-white">Logged in as {user.username}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Your timers are synced to your account</div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {archivedTimers.map((timer) => (
+                  <div key={timer.id} className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="font-medium">{timer.label}</h4>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {timer.category && <span>Category: {timer.category} • </span>}
+                          Min time: {formatTimeDuration(timer.minTime, true)}
+                          {timer.maxTime ? ` • Target: ${formatTimeDuration(timer.maxTime, true)}` : ''}
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center"
+                        onClick={() => handleRestoreTimer(timer.id)}
+                      >
+                        <RefreshCcw className="w-4 h-4 mr-1" /> Restore
+                      </Button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Credits */}
+          <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <Collapsible
+              open={expandedCredits}
+              onOpenChange={setExpandedCredits}
+            >
+              <CollapsibleTrigger asChild>
+                <div className="flex justify-between items-center p-4 cursor-pointer border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium dark:text-white">
+                    <Info className="w-5 h-5 inline-block mr-2 text-blue-500" />
+                    About VibeTimer
+                  </h3>
+                  <div className="text-gray-400">
+                    {expandedCredits ? "▲" : "▼"}
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 space-y-3 text-sm">
+                <p className="dark:text-gray-300">
+                  VibeTimer is a productivity app that helps you track time intervals between activities. 
+                  It's perfect for habit tracking, time management, and creating routines.
+                </p>
+                <p className="dark:text-gray-300">
+                  Built with React, TypeScript, and PostgreSQL. Created on Replit.
+                </p>
+                <div className="flex items-center mt-2">
                   <Button
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
-                    onClick={handleLogout}
-                    disabled={logoutMutation.isPending}
+                    onClick={() => window.open("https://github.com/replit", "_blank")}
                   >
-                    {logoutMutation.isPending ? (
-                      <>
-                        <div className="animate-spin h-4 w-4 mr-1 border-2 border-current border-t-transparent rounded-full"></div>
-                        Logging out...
-                      </>
-                    ) : (
-                      <>
-                        <LogOut className="w-4 h-4" /> Log Out
-                      </>
-                    )}
+                    <Github className="w-4 h-4" /> GitHub
                   </Button>
                 </div>
-              ) : (
-                <div>
-                  <div className="font-medium mb-2 dark:text-white">Sync Your Timers</div>
-                  <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
-                    Log in with your account to save your timers and sync across devices
-                  </div>
-                  <Button
-                    variant="default"
-                    className="w-full flex items-center justify-center gap-1.5"
-                    onClick={handleReplitLogin}
-                  >
-                    <LogIn className="w-4 h-4" /> Login with Replit
-                  </Button>
+                <div className="text-xs text-gray-500 mt-3 dark:text-gray-400">
+                  © {new Date().getFullYear()} VibeTimer. All rights reserved.
                 </div>
-              )}
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+          
+          {/* User Authentication & Data Management */}
+          <div className="mx-4 mt-4 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">
+              <User className="w-5 h-5 inline-block mr-2 text-blue-500" />
+              Account & Data
+            </h3>
             
-            {/* Import/Export */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-              <div className="font-medium mb-2 dark:text-white">Import/Export Data</div>
-              <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
-                Export your timers or import from a backup file
+            <div className="p-4 space-y-4">
+              {/* Authentication */}
+              <div>
+                {user ? (
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-medium dark:text-white">Logged in as {user.username}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Your timers are synced to your account</div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={handleLogout}
+                      disabled={logoutMutation.isPending}
+                    >
+                      {logoutMutation.isPending ? (
+                        <>
+                          <div className="animate-spin h-4 w-4 mr-1 border-2 border-current border-t-transparent rounded-full"></div>
+                          Logging out...
+                        </>
+                      ) : (
+                        <>
+                          <LogOut className="w-4 h-4" /> Log Out
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="font-medium mb-2 dark:text-white">Sync Your Timers</div>
+                    <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
+                      Log in with your account to save your timers and sync across devices
+                    </div>
+                    <Button
+                      variant="default"
+                      className="w-full flex items-center justify-center gap-1.5"
+                      onClick={handleReplitLogin}
+                    >
+                      <LogIn className="w-4 h-4" /> Login with Replit
+                    </Button>
+                  </div>
+                )}
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1"
-                  onClick={handleExportData}
-                >
-                  <Download className="w-4 h-4" /> Export
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 flex items-center justify-center gap-1"
-                  onClick={handleImportClick}
-                >
-                  <Upload className="w-4 h-4" /> Import
-                </Button>
-                
-                {/* Hidden file input for import */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".json"
-                  onChange={handleFileChange}
-                />
-              </div>
-              {importError && (
-                <div className="text-red-500 text-sm mt-2">
-                  {importError}
+              
+              {/* Import/Export */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <div className="font-medium mb-2 dark:text-white">Import/Export Data</div>
+                <div className="text-sm text-gray-500 mb-3 dark:text-gray-400">
+                  Export your timers or import from a backup file
                 </div>
-              )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1"
+                    onClick={handleExportData}
+                  >
+                    <Download className="w-4 h-4" /> Export
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center gap-1"
+                    onClick={handleImportClick}
+                  >
+                    <Upload className="w-4 h-4" /> Import
+                  </Button>
+                  
+                  {/* Hidden file input for import */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept=".json"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                {importError && (
+                  <div className="text-red-500 text-sm mt-2">
+                    {importError}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* App Settings */}
-        <div className="mx-4 mt-4 mb-6 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
-          <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">App Settings</h3>
           
-          <div className="p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="dark:text-white">Dark Mode</span>
-              <Switch 
-                checked={darkMode}
-                onCheckedChange={(checked) => {
-                  // Update state
-                  setDarkMode(checked);
-                  
-                  // Apply theme using the utility function
-                  applyTheme(checked);
-                }}
-              />
-            </div>
+          {/* App Settings */}
+          <div className="mx-4 mt-4 mb-6 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+            <h3 className="text-lg font-medium p-4 border-b border-gray-200 dark:border-gray-700 dark:text-white">App Settings</h3>
             
-            <div className="flex justify-between items-center">
-              <span className="dark:text-white">Notifications</span>
-              <Switch
-                checked={notifications}
-                onCheckedChange={setNotifications}
-              />
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="dark:text-white">Keep Screen Awake</span>
-              <Switch
-                checked={keepScreenAwake}
-                onCheckedChange={setKeepScreenAwake}
-              />
+            <div className="p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="dark:text-white">Dark Mode</span>
+                <Switch 
+                  checked={darkMode}
+                  onCheckedChange={(checked) => {
+                    // Update state
+                    setDarkMode(checked);
+                    
+                    // Apply theme using the utility function
+                    applyTheme(checked);
+                  }}
+                />
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="dark:text-white">Notifications</span>
+                <Switch
+                  checked={notifications}
+                  onCheckedChange={setNotifications}
+                />
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="dark:text-white">Keep Screen Awake</span>
+                <Switch
+                  checked={keepScreenAwake}
+                  onCheckedChange={setKeepScreenAwake}
+                />
+              </div>
             </div>
           </div>
         </div>
