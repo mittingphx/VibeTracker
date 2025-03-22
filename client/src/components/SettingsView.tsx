@@ -137,6 +137,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [editMaxTime, setEditMaxTime] = useState<number>(0);
   const [editMaxTimeUnit, setEditMaxTimeUnit] = useState<TimeUnit>("hours");
   const [editPlaySound, setEditPlaySound] = useState(true);
+  const [editCategory, setEditCategory] = useState<string>("");
 
   const handleToggleTimer = async (id: number, isEnabled: boolean) => {
     try {
@@ -200,6 +201,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       }
       
       setEditPlaySound(timer.playSound);
+      setEditCategory(timer.category || "");
     }
   };
 
@@ -221,7 +223,8 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       await apiRequest("PATCH", `/api/timers/${id}`, { 
         minTime: minTimeSeconds, 
         maxTime: maxTimeSeconds,
-        playSound: editPlaySound
+        playSound: editPlaySound,
+        category: editCategory || null
       });
       
       queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
