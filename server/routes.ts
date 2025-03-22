@@ -1,11 +1,13 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { Server, createServer } from "http";
 import { storage } from "./storage";
-import { insertTimerSchema, insertTimerHistorySchema } from "@shared/schema";
+import { insertTimerSchema, insertTimerHistorySchema, timers, timerHistory } from "@shared/schema";
 import { format } from "date-fns";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { setupAuth } from "./auth-fixed";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication before route registration
@@ -265,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Undo/redo timer press (toggle isActive)
-  router.patch("/history/:id", async (req: Request, res: Response) => {
+  router.patch("/history/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -280,13 +282,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "isActive field is required and must be a boolean" });
       }
       
-      const updatedHistory = await storage.updateTimerHistory(id, validatedData.data.isActive);
-      if (!updatedHistory) {
+      // First get the history record to check timer ownership
+      const [historyRecord] = await db.select()
+        .from(timerHistory)
+        .where(eq(timerHistory.id, id))
+        .limit(1);
+        
+      if (!historyRecord) {
         return res.status(404).json({ message: "History record not found" });
       }
       
-      // Get enhanced timers to return with updated state
-      const enhancedTimers = await storage.getEnhancedTimers();
+      // Get the timer to check ownership
+      const timer = await storage.getTimer(historyRecord.timerId);
+      if (!timer) {
+        return res.status(404).json({ message: "Associated timer not found" });
+      }
+      
+      // Verify ownership
+      if (timer.userId !== req.user!.id) {
+        return res.status(403).json({ message: "You don't have permission to update this history" });
+      }
+      
+      const updatedHistory = await storage.updateTimerHistory(id, validatedData.data.isActive);
+      
+      // Get enhanced timers for this user to return with updated state
+      const enhancedTimers = await storage.getEnhancedTimersByUserId(req.user!.id);
       
       res.json({ 
         history: updatedHistory,
