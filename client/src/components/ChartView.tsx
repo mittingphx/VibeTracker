@@ -131,7 +131,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
   
   return (
     <div className={`${isMobile ? 'fixed inset-0 z-50 pt-4 pb-16' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
-      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} border overflow-auto ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {/* Header */}
         <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
         )}
         
         {/* Chart Display */}
-        <div className={`mx-4 border rounded-xl p-4 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'} flex-1 overflow-auto`}>
+        <div className={`mx-4 border rounded-xl p-4 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
           {isLoading ? (
             <div className="h-64 flex items-center justify-center">
               <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
