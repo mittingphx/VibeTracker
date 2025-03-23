@@ -2,6 +2,13 @@
 
 A dynamic time tracking mobile application designed to transform productivity management into an engaging, visually compelling experience. The app combines intuitive design with powerful analytics to help users understand and optimize their time usage.
 
+
+## Quick Start
+
+This app is currently available
+free of charge at [https://tinyurl.com/vibe-tracker/]
+
+
 ## Features
 
 - Multiple customizable timers that show elapsed time since the last button press
