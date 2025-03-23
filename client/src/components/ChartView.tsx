@@ -130,26 +130,24 @@ export default function ChartView({ onClose }: ChartViewProps) {
   } : VictoryTheme.material;
   
   return (
-    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-16 pb-16' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
+    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-4 pb-16' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
       <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {/* Header */}
         <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-          <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Charts</h1>
+          <div className="flex items-center gap-2">
+            <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Charts</h1>
+            <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded ${isDarkMode ? 'bg-blue-900/30 text-blue-200 border border-blue-800' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 mr-1">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              Work in Progress
+            </span>
+          </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             Close
           </Button>
-        </div>
-        
-        {/* Work in Progress - Small Badge */}
-        <div className="px-4 mt-2">
-          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${isDarkMode ? 'bg-blue-900/30 text-blue-200 border border-blue-800' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 mr-1">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            Work in Progress
-          </span>
         </div>
         
         {/* Chart Type Selector */}
