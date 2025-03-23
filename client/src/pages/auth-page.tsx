@@ -75,6 +75,18 @@ export default function AuthPage() {
     },
   });
 
+  // Add loading state management
+  useEffect(() => {
+    if (loginMutation.isPending || registerMutation.isPending) {
+      document.body.style.opacity = '0.7';
+    } else {
+      document.body.style.opacity = '1';
+    }
+    return () => {
+      document.body.style.opacity = '1';
+    };
+  }, [loginMutation.isPending, registerMutation.isPending]);
+
   const onLoginSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data);
   };
@@ -212,15 +224,27 @@ export default function AuthPage() {
     },
   });
 
-  const onRegisterSubmit = (data: z.infer<typeof registerSchema>) => {
-    const { confirmPassword, ...userData } = data;
-    // Include security information for account recovery
-    registerMutation.mutate(userData);
-    toast({
-      title: "Security information saved",
-      description: "Be sure to remember your security question, answer, and PIN for account recovery.",
-      variant: "default",
-    });
+  const onRegisterSubmit = async (data: z.infer<typeof registerSchema>) => {
+    try {
+      const { confirmPassword, ...userData } = data;
+      await registerMutation.mutateAsync(userData);
+      
+      // Wait a brief moment before showing the toast
+      setTimeout(() => {
+        toast({
+          title: "Security information saved",
+          description: "Be sure to remember your security question, answer, and PIN for account recovery.",
+          variant: "default",
+        });
+      }, 100);
+      
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "An error occurred during registration",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
