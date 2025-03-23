@@ -178,6 +178,24 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       });
     }
   };
+  
+  const handleToggleDisplayType = async (id: number, displayType: "bar" | "wheel") => {
+    try {
+      await apiRequest("PATCH", `/api/timers/${id}`, { displayType });
+      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+      
+      toast({
+        title: "Display Type Updated",
+        description: `Timer now displays as a ${displayType === "wheel" ? "progress wheel" : "progress bar"}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update display type",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleExpandTimer = (id: number) => {
     // If same timer clicked, collapse it
@@ -205,6 +223,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       }
       
       setEditPlaySound(timer.playSound);
+      setEditDisplayType(timer.displayType === "wheel" ? "wheel" : "bar");
       setEditCategory(timer.category || "");
     }
   };
@@ -228,6 +247,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
         minTime: minTimeSeconds, 
         maxTime: maxTimeSeconds,
         playSound: editPlaySound,
+        displayType: editDisplayType,
         category: editCategory || null
       });
       
@@ -504,7 +524,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           <Switch
                             checked={timer.displayType === 'wheel'}
                             onCheckedChange={(checked) => 
-                              handleUpdateTimer(timer.id, { displayType: checked ? 'wheel' : 'bar' })
+                              handleToggleDisplayType(timer.id, checked ? 'wheel' : 'bar')
                             }
                           />
                           <span className={`text-xs ${timer.displayType === 'wheel' ? 'font-bold' : ''}`}>Wheel</span>
