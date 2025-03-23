@@ -19,7 +19,7 @@ export default function AboutView() {
         ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} 
         py-4 border-b
       `}>
-        <h2 className="text-xl font-bold text-center">About VibeTimer</h2>
+        <h2 className="text-xl font-bold text-center">About VibeTracker</h2>
       </header>
       
       <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -30,7 +30,7 @@ export default function AboutView() {
         `}>
           <h3 className="text-xl font-medium">About The App</h3>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-            VibeTimer is a productivity app that helps you track time intervals between activities. 
+            VibeTracker is a productivity app that helps you track time intervals between activities. 
             It's perfect for habit tracking, time management, and creating routines.
           </p>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
@@ -71,9 +71,9 @@ export default function AboutView() {
               variant="default"
               size="sm"
               className="flex items-center gap-1 mr-2 bg-[#24292e] hover:bg-[#3a3f45] text-white"
-              onClick={() => window.open("https://github.com/mittingphx", "_blank")}
+              onClick={() => window.open("https://github.com/mittingphx/VibeTracker", "_blank")}
             >
-              <Github className="w-4 h-4" /> View My GitHub
+              <Github className="w-4 h-4" /> View on GitHub
             </Button>
           </div>
         </div>
@@ -85,15 +85,15 @@ export default function AboutView() {
         `}>
           <h3 className="text-xl font-medium">Development Cost</h3>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-            Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$4.88</span>
+            Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$16.25</span>
           </p>
           <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-            This represents the AI usage cost as of March 22, 2025, as shown in the Replit admin dashboard.
+            This represents the AI usage cost as of March 23, 2025, as shown in the Replit admin dashboard.
           </p>
         </div>
 
         <div className={`text-center ${isDarkMode ? "text-gray-400" : "text-gray-500"} text-sm mt-6`}>
-          © {new Date().getFullYear()} VibeTimer by Scott Mitting. All rights reserved.
+          © {new Date().getFullYear()} VibeTracker by Scott Mitting. All rights reserved.
         </div>
       </div>
     </div>
