@@ -58,26 +58,20 @@ export default function ChartView({ onClose }: ChartViewProps) {
     : startOfWeek(currentDate, { weekStartsOn: 1 });  // Monday
   
   const currentEnd = chartPeriod === "daily"
-    ? new Date(currentDate.getTime() + 24 * 60 * 60 * 1000) // End of today
+    ? new Date(currentDate.getTime() + 24 * 60 * 60 * 1000 - 1)  // End of today
     : endOfWeek(currentDate, { weekStartsOn: 1 });  // Sunday
   
   // Yesterday or last week
   const comparisonStart = chartPeriod === "daily"
-    ? subDays(currentDate, 1)
-    : startOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last Monday
+    ? startOfDay(subDays(currentDate, 1))  // Yesterday
+    : startOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Monday
   
   const comparisonEnd = chartPeriod === "daily"
-    ? currentDate  // End of yesterday = start of today
-    : endOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last Sunday
+    ? new Date(comparisonStart.getTime() + 24 * 60 * 60 * 1000 - 1)  // End of yesterday
+    : endOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Sunday
 
-  const {
-    currentPeriodData,
-    comparisonPeriodData,
-    averageTimeBetweenPresses,
-    pressEvents,
-    isLoading,
-    error
-  } = useCharts({
+  // Fetch chart data based on selected period
+  const { currentPeriodData, comparisonPeriodData, averageTimeBetweenPresses, pressEvents, isLoading, error } = useCharts({
     period: chartPeriod,
     currentStart,
     currentEnd,
@@ -86,7 +80,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
     selectedTimerIds,
   });
 
-  // Prepare chart data
+  // Combine data for comparison if needed
   const countChartData = chartMode === "today" 
     ? currentPeriodData
     : [...currentPeriodData, ...comparisonPeriodData];
@@ -263,9 +257,9 @@ export default function ChartView({ onClose }: ChartViewProps) {
                       data={
                         timers
                           .filter(timer => selectedTimerIds.includes(timer.id))
-                          .map(timer => ({
+                          .map((timer, index) => ({
                             name: timer.label,
-                            symbol: { fill: timer.color }
+                            symbol: { fill: getChartColorForTimer(index) }
                           }))
                       }
                     />
@@ -325,9 +319,9 @@ export default function ChartView({ onClose }: ChartViewProps) {
                       data={
                         timers
                           .filter(timer => selectedTimerIds.includes(timer.id))
-                          .map(timer => ({
+                          .map((timer, index) => ({
                             name: timer.label,
-                            symbol: { fill: timer.color }
+                            symbol: { fill: getChartColorForTimer(index) }
                           }))
                       }
                     />
@@ -407,9 +401,9 @@ export default function ChartView({ onClose }: ChartViewProps) {
                       data={
                         timers
                           .filter(timer => selectedTimerIds.includes(timer.id))
-                          .map(timer => ({
+                          .map((timer, index) => ({
                             name: timer.label,
-                            symbol: { fill: timer.color }
+                            symbol: { fill: getChartColorForTimer(index) }
                           }))
                       }
                     />
