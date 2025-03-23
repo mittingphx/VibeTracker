@@ -285,13 +285,13 @@ export default function ChartView({ onClose }: ChartViewProps) {
                     <VictoryStack>
                       {timers
                         .filter(timer => selectedTimerIds.includes(timer.id))
-                        .map(timer => (
+                        .map((timer, index) => (
                           <VictoryBar
                             key={timer.id}
                             data={countChartData.filter(d => d.timerId === timer.id)}
                             x="timestamp"
                             y="count"
-                            style={{ data: { fill: timer.color } }}
+                            style={{ data: { fill: getChartColorForTimer(index) } }}
                           />
                         ))}
                     </VictoryStack>
