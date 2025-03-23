@@ -140,18 +140,16 @@ export default function ChartView({ onClose }: ChartViewProps) {
           </Button>
         </div>
         
-        {/* Work in Progress Banner */}
-        <div className={`mx-4 mt-4 p-3 rounded-md ${isDarkMode ? 'bg-blue-900/30 text-blue-200' : 'bg-blue-50 text-blue-800'} flex items-center border ${isDarkMode ? 'border-blue-800' : 'border-blue-200'}`}>
-          <div className="flex-shrink-0 mr-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+        {/* Work in Progress - Small Badge */}
+        <div className="px-4 mt-2">
+          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded ${isDarkMode ? 'bg-blue-900/30 text-blue-200 border border-blue-800' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 mr-1">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
-          </div>
-          <div className="text-sm">
-            <strong>Work in Progress:</strong> We're continuing to improve the charts feature with more visualizations and filtering options.
-          </div>
+            Work in Progress
+          </span>
         </div>
         
         {/* Chart Type Selector */}
