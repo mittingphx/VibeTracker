@@ -94,6 +94,28 @@ export default function ChartView({ onClose }: ChartViewProps) {
   // Check if there is data for the selected period
   const hasData = countChartData.length > 0;
 
+  // Define a set of distinct high-contrast colors for charts
+  const distinctChartColors = [
+    "#FF3B30", // Red
+    "#5856D6", // Purple
+    "#FF9500", // Orange
+    "#34C759", // Green
+    "#007AFF", // Blue
+    "#AF52DE", // Magenta
+    "#FFCC00", // Yellow
+    "#00C7BE", // Teal
+    "#FF2D55", // Pink
+    "#5AC8FA", // Light Blue
+    "#E0777D", // Salmon
+    "#A2845E", // Brown
+  ];
+  
+  // Function to assign a distinct chart color for each timer
+  // This ensures each timer has a different color in the charts, even if the original timer color is similar
+  const getChartColorForTimer = (index: number) => {
+    return distinctChartColors[index % distinctChartColors.length];
+  };
+  
   const getTimerById = (id: number) => {
     return timers.find(timer => timer.id === id) || { color: "#ccc", label: "Unknown" };
   };

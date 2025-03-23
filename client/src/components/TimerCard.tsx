@@ -160,6 +160,15 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
   let progressColor = timer.color;
   let timeTextColor = isDarkMode ? "text-gray-100" : "text-gray-900";
   
+  // Create a gradient background for the progress bar to simulate the wheel segments
+  let progressGradient = `linear-gradient(to right, 
+    #FF3B30 0%, 
+    #FF3B30 33%, 
+    #FFCC00 33%, 
+    #FFCC00 66%, 
+    #34C759 66%, 
+    #34C759 100%)`;
+  
   if (!timer.canPress) {
     progressColor = "#FF3B30"; // iOS red
     timeTextColor = "text-red-500";
@@ -376,7 +385,11 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
           <Progress 
             value={timer.progress} 
             className="h-2 mt-2"
-            indicatorStyle={{ backgroundColor: progressColor }}
+            indicatorStyle={{ 
+              background: progressGradient,
+              // Create a mask effect to reveal segments as progress advances
+              clipPath: `inset(0 ${100 - timer.progress}% 0 0)`
+            }}
           />
         )}
         
