@@ -666,12 +666,12 @@ export default function AuthPage() {
       {/* Hero Section */}
       <div className="hidden md:block md:w-1/2 bg-gray-100 dark:bg-gray-900 p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-center mb-6 text-blue-500">
-            <TimerOff className="h-16 w-16" />
+          <div className="flex flex-col items-center justify-center mb-6">
+            <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="h-24 w-24 mb-4" />
+            <h1 className="text-4xl font-bold text-center dark:text-white">
+              Welcome to VibeTracker
+            </h1>
           </div>
-          <h1 className="text-4xl font-bold mb-6 text-center dark:text-white">
-            Welcome to VibeTracker
-          </h1>
           <div className="space-y-6 text-gray-600 dark:text-gray-300">
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
               <h3 className="font-medium mb-1">

@@ -23,6 +23,9 @@ export default function AboutView() {
       </header>
       
       <div className="flex-1 overflow-auto p-6 space-y-6">
+        <div className="flex justify-center mb-2">
+          <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="h-36 w-36" />
+        </div>
         <div className={`
           rounded-xl overflow-hidden shadow-lg 
           ${isDarkMode ? 'bg-gray-800' : 'bg-white'}

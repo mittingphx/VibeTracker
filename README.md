@@ -1,5 +1,9 @@
 # VibeTracker
 
+<p align="center">
+  <img src="client/public/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" width="200" />
+</p>
+
 A dynamic time tracking mobile application designed to transform productivity management into an engaging, visually compelling experience. The app combines intuitive design with powerful analytics to help users understand and optimize their time usage.
 
 
