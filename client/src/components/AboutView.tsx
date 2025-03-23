@@ -1,12 +1,26 @@
 import { getThemePreference } from "@/lib/themeUtils";
 import { Button } from "@/components/ui/button";
-import { Github } from "lucide-react";
+import { Github, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation } from "wouter";
 
-export default function AboutView() {
+interface AboutViewProps {
+  onClose?: () => void;
+}
+
+export default function AboutView({ onClose }: AboutViewProps = {}) {
   // Get theme preference
   const isDarkMode = getThemePreference();
   const isMobile = useIsMobile();
+  const [, setLocation] = useLocation();
+  
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      setLocation("/");
+    }
+  };
   
   return (
     <div className={`
@@ -17,9 +31,17 @@ export default function AboutView() {
       <header className={`
         sticky top-0 z-10 
         ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} 
-        py-4 border-b
+        py-4 border-b flex justify-between items-center px-4
       `}>
-        <h2 className="text-xl font-bold text-center">About VibeTracker</h2>
+        <div className="w-8">
+          {isMobile && (
+            <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8">
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+        <h2 className="text-xl font-bold">About VibeTracker</h2>
+        <div className="w-8"></div>
       </header>
       
       <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -88,11 +110,25 @@ export default function AboutView() {
         `}>
           <h3 className="text-xl font-medium">Development Cost</h3>
           <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-            Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$16.25</span>
+            Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$18.50</span>
           </p>
           <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
             This represents the AI usage cost as of March 23, 2025, as shown in the Replit admin dashboard.
           </p>
+        </div>
+
+        <div className={`
+          rounded-xl overflow-hidden shadow-lg 
+          ${isDarkMode ? 'bg-gray-800' : 'bg-white'}
+          p-6 space-y-4
+        `}>
+          <h3 className="text-xl font-medium">Recent Updates</h3>
+          <ul className={`list-disc pl-5 ${isDarkMode ? "text-gray-300" : "text-gray-700"} space-y-2`}>
+            <li><span className="font-medium">March 23, 2025:</span> Added LED-like filling effect to progress wheel, improved timer display with client-side ticking, reorganized TimerCard layout, improved color contrast in charts</li>
+            <li><span className="font-medium">March 20, 2025:</span> Added display type selection in settings (bar/wheel), implemented segmented progress wheel</li>
+            <li><span className="font-medium">March 15, 2025:</span> Added security features with password recovery system</li>
+            <li><span className="font-medium">March 10, 2025:</span> Added multi-user authentication and timer categories</li>
+          </ul>
         </div>
 
         <div className={`text-center ${isDarkMode ? "text-gray-400" : "text-gray-500"} text-sm mt-6`}>
