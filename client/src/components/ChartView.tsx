@@ -526,7 +526,22 @@ export default function ChartView({ onClose }: ChartViewProps) {
                     <Switch
                       id={`toggle-chart-${timer.id}`}
                       checked={selectedTimerIds.includes(timer.id)}
-                      onCheckedChange={() => toggleTimerSelection(timer.id)}
+                      onCheckedChange={(checked) => {
+                        // Pass the new state directly to ensure immediate update
+                        if (checked) {
+                          // Add timer to selection if not already included
+                          if (!selectedTimerIds.includes(timer.id)) {
+                            const newSelection = [...selectedTimerIds, timer.id];
+                            setSelectedTimerIds(newSelection);
+                            localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
+                          }
+                        } else {
+                          // Remove timer from selection
+                          const newSelection = selectedTimerIds.filter(id => id !== timer.id);
+                          setSelectedTimerIds(newSelection);
+                          localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
+                        }
+                      }}
                     />
                   </div>
                 </div>
