@@ -187,16 +187,69 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
       <CardContent className="px-5 py-4 flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
-            {/* Timer Label and Actions */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
-                {timer.category && timer.category !== "Default" && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
-                    {timer.category}
+            {/* Timer Label */}
+            <div>
+              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
+              {timer.category && timer.category !== "Default" && (
+                <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                  {timer.category}
+                </span>
+              )}
+            </div>
+            
+            {/* Timer Elapsed Time */}
+            <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
+              {formatTimeDuration(timer.elapsedTime)}
+            </p>
+            <p className={`text-sm ${timeTextColor} -mt-1`}>
+              {timer.elapsedTime < 60 
+                ? `${timer.elapsedTime} ${timer.elapsedTime === 1 ? 'second' : 'seconds'}`
+                : `${timer.elapsedTime.toLocaleString()} seconds total`}
+            </p>
+            
+            {/* Last Clicked Date */}
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+              {timer.lastPressed 
+                ? `Last: ${formatDistanceToNow(timer.lastPressed, { addSuffix: true })}` 
+                : "No records yet"}
+            </p>
+          </div>
+          
+          {/* Right side: Control buttons and timer */}
+          <div className="flex flex-col items-end">
+            {/* Top row: Control buttons */}
+            <div className="flex items-center mb-2">
+              {/* Undo Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
+                onClick={handleUndo}
+                disabled={!canUndo || isUpdating || isUndoing || isRedoing}
+              >
+                <Undo2 className="h-4 w-4" />
+                {isUndoing && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
                   </span>
                 )}
-              </div>
+              </Button>
+              
+              {/* Redo Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
+                onClick={handleRedo}
+                disabled={!canRedo || isUpdating || isUndoing || isRedoing}
+              >
+                <Redo2 className="h-4 w-4" />
+                {isRedoing && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
+                  </span>
+                )}
+              </Button>
               
               {/* Timer Actions Dropdown */}
               <DropdownMenu>
@@ -266,56 +319,21 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
               </DropdownMenu>
             </div>
             
-            {/* Timer Elapsed Time */}
-            <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
-              {formatTimeDuration(timer.elapsedTime)}
-            </p>
-            <p className={`text-sm ${timeTextColor} -mt-1`}>
-              {timer.elapsedTime < 60 
-                ? `${timer.elapsedTime} ${timer.elapsedTime === 1 ? 'second' : 'seconds'}`
-                : `${timer.elapsedTime.toLocaleString()} seconds total`}
-            </p>
-            
-            {/* Last Clicked Date */}
-            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              {timer.lastPressed 
-                ? `Last: ${formatDistanceToNow(timer.lastPressed, { addSuffix: true })}` 
-                : "No records yet"}
-            </p>
-          </div>
-          
-          {/* Timer Controls - Redesigned with progress wheel to the left of the button when in wheel mode */}
-          <div className="flex items-center">
-            {/* Progress Wheel - Only when wheel display type is selected */}
-            {timer.displayType === 'wheel' && (
-              <div className="mr-4">
-                <ProgressWheel 
-                  value={timer.progress}
-                  size={80}
-                  thickness={12}
-                  minColor="#FF3B30" // iOS red
-                  targetColor="#FFCC00" // iOS yellow
-                  overColor="#34C759" // iOS green
-                />
-              </div>
-            )}
-            
-            <div className="flex flex-col items-center">
-              {/* Undo Button */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
-                onClick={handleUndo}
-                disabled={!canUndo || isUpdating || isUndoing || isRedoing}
-              >
-                <Undo2 className="h-4 w-4" />
-                {isUndoing && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
-                  </span>
-                )}
-              </Button>
+            {/* Bottom row: Timer and progress wheel */}
+            <div className="flex items-center mt-1">
+              {/* Progress Wheel - Only when wheel display type is selected */}
+              {timer.displayType === 'wheel' && (
+                <div className="mr-3">
+                  <ProgressWheel 
+                    value={timer.progress}
+                    size={80}
+                    thickness={12}
+                    minColor="#FF3B30" // iOS red
+                    targetColor="#FFCC00" // iOS yellow
+                    overColor="#34C759" // iOS green
+                  />
+                </div>
+              )}
               
               {/* Main Timer Button */}
               <TooltipProvider>
@@ -324,7 +342,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                     <Button
                       style={{ backgroundColor: buttonDisabled ? "#C7C7CC" : timer.color }}
                       size="icon"
-                      className="text-white rounded-full w-14 h-14 flex items-center justify-center mt-1 shadow-md"
+                      className="text-white rounded-full w-14 h-14 flex items-center justify-center shadow-md"
                       onClick={handleTimerPress}
                       disabled={buttonDisabled}
                     >
@@ -349,22 +367,6 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              
-              {/* Redo Button */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 mt-1 h-8 w-8`}
-                onClick={handleRedo}
-                disabled={!canRedo || isUpdating || isUndoing || isRedoing}
-              >
-                <Redo2 className="h-4 w-4" />
-                {isRedoing && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
-                  </span>
-                )}
-              </Button>
             </div>
           </div>
         </div>
