@@ -93,7 +93,7 @@ export default function Home() {
       {/* Header */}
       <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-12 pb-2 px-4 flex justify-between items-center border-b`}>
         <div className="flex items-center gap-2">
-          <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="h-10 w-10" />
+          <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="w-auto h-auto" style={{ width: "2rem", height: "2rem" }} />
           <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>VibeTracker</h1>
         </div>
         <Button
