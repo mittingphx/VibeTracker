@@ -5,24 +5,36 @@
  * @returns Formatted duration string
  */
 export function formatTimeDuration(seconds: number, compact = false): string {
-  if (seconds === 0) return compact ? "0m" : "0 minutes";
+  if (seconds === 0) return compact ? "0s" : "0 seconds";
   
   const days = Math.floor(seconds / (24 * 60 * 60));
   const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
   const minutes = Math.floor((seconds % (60 * 60)) / 60);
+  const secs = Math.floor(seconds % 60);
   
   let result = "";
   
+  // Strategy: display at most two non-zero time units
+  let unitsDisplayed = 0;
+  
   if (days > 0) {
     result += compact ? `${days}d ` : `${days}d `;
+    unitsDisplayed++;
   }
   
-  if (hours > 0 || days > 0) {
+  if (hours > 0 && unitsDisplayed < 2) {
     result += compact ? `${hours}h ` : `${hours}h `;
+    unitsDisplayed++;
   }
   
-  if (minutes > 0 || (hours === 0 && days === 0)) {
-    result += compact ? `${minutes}m` : `${minutes}m`;
+  if (minutes > 0 && unitsDisplayed < 2) {
+    result += compact ? `${minutes}m ` : `${minutes}m `;
+    unitsDisplayed++;
+  }
+  
+  // For seconds, either show them if they're the only unit or if we still need another unit
+  if ((secs > 0 && unitsDisplayed < 2) || (unitsDisplayed === 0)) {
+    result += compact ? `${secs}s` : `${secs}s`;
   }
   
   return result.trim();

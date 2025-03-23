@@ -271,7 +271,9 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
               {formatTimeDuration(timer.elapsedTime)}
             </p>
             <p className={`text-sm ${timeTextColor} -mt-1`}>
-              {timer.elapsedTime.toLocaleString()} seconds
+              {timer.elapsedTime < 60 
+                ? `${timer.elapsedTime} ${timer.elapsedTime === 1 ? 'second' : 'seconds'}`
+                : `${timer.elapsedTime.toLocaleString()} seconds total`}
             </p>
             
             {/* Last Clicked Date */}
@@ -356,8 +358,8 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
           <div className="flex justify-center items-center mt-2">
             <ProgressWheel 
               value={timer.progress} 
-              minValue={33} // Fixed at 33% for the first segment
-              maxValue={100} // Fixed at 100% for the full wheel
+              // Let the component use its default segment proportions (33%, 33%, 34%)
+              // instead of hardcoding values that don't reflect the actual timer settings
               size={100}
               thickness={15}
               minColor="#FF3B30" // iOS red
