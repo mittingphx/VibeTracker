@@ -30,14 +30,16 @@ export default function Home() {
   // Security setup dialog state
   const [showSecuritySetup, setShowSecuritySetup] = useState(false);
 
-  // Handle errors during data loading
-  if (error) {
-    toast({
-      title: "Error",
-      description: "Failed to load timers. Please try again.",
-      variant: "destructive",
-    });
-  }
+  // Handle errors during data loading - using useEffect to avoid infinite renders
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load timers. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
   
   // State to store the timer ID to highlight in settings
   const [highlightedTimerId, setHighlightedTimerId] = useState<number | null>(null);
@@ -54,22 +56,23 @@ export default function Home() {
     }
   }, [user]);
   
-  // Auto-launch timer creation modal only when logged in with no timers
-  // We track if we've checked for timers to prevent opening the modal unnecessarily
-  const hasCheckedTimers = useRef(false);
-  
+  // Only show new timer dialog for users with no timers on first login
+  // Use localStorage to track if user has ever had timers before
   useEffect(() => {
-    // Only auto-open the modal if:
-    // 1. User is logged in
-    // 2. We've finished loading timers
-    // 3. There are actually zero timers
-    // 4. We haven't already checked for timers (to prevent reopening on re-renders)
-    if (user && !isLoading && timers.length === 0 && !hasCheckedTimers.current) {
-      hasCheckedTimers.current = true;
-      setShowNewTimerModal(true);
-    } else if (timers.length > 0 && !hasCheckedTimers.current) {
-      // If we have timers, mark that we've checked
-      hasCheckedTimers.current = true;
+    // If we're logged in and data is loaded
+    if (user && !isLoading) {
+      const hasExistingTimers = localStorage.getItem('hasExistingTimers') === 'true';
+      
+      if (timers.length > 0) {
+        // If user has timers now, remember this for future sessions
+        localStorage.setItem('hasExistingTimers', 'true');
+      } else if (timers.length === 0 && !hasExistingTimers) {
+        // Only show modal for new users with no timers
+        // We specifically avoid showing it on refresh for existing users
+        setShowNewTimerModal(true);
+        // Remember that we've prompted them once
+        localStorage.setItem('hasExistingTimers', 'true');
+      }
     }
   }, [user, isLoading, timers.length]);
   
