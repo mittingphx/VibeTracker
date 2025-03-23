@@ -98,28 +98,37 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
       console.log("Submitting timer with data:", timerData);
       
       try {
+        console.log("Making API request to create timer with user:", user);
         const response = await apiRequest("POST", "/api/timers", timerData);
         console.log("Timer creation response:", response);
+        
+        if (!response.ok) {
+          // If the response is not ok, try to parse the error
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Server error response:", errorData);
+          throw new Error(errorData.message || "Failed to create timer. Server returned an error.");
+        }
+        
+        // Query client invalidation and success handling
+        queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
+        
+        toast({
+          title: "Success",
+          description: `Timer "${name}" has been created`,
+        });
+        
+        onClose();
       } catch (error) {
         console.error("Error submitting timer:", error);
         throw error;
       }
-      
-      queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
-      
+    } catch (error: any) {
+      console.error("Error creating timer:", error);
       toast({
-        title: "Success",
-        description: `Timer "${name}" has been created`,
-      });
-      
-      onClose();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create timer",
+        title: "Error Creating Timer",
+        description: error.message || "Failed to create timer. Please try again.",
         variant: "destructive",
       });
-      console.error("Error creating timer:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -231,11 +240,19 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
               className="flex space-x-6"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bar" id="display-bar" className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary" />
+                <RadioGroupItem 
+                  value="bar" 
+                  id="display-bar" 
+                  className="border-2 border-gray-400 data-[state=checked]:border-white data-[state=checked]:bg-white dark:data-[state=checked]:ring-2 dark:data-[state=checked]:ring-white dark:data-[state=checked]:ring-offset-2" 
+                />
                 <Label htmlFor="display-bar" className="text-sm font-medium">Progress Bar</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="wheel" id="display-wheel" className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary" />
+                <RadioGroupItem 
+                  value="wheel" 
+                  id="display-wheel" 
+                  className="border-2 border-gray-400 data-[state=checked]:border-white data-[state=checked]:bg-white dark:data-[state=checked]:ring-2 dark:data-[state=checked]:ring-white dark:data-[state=checked]:ring-offset-2" 
+                />
                 <Label htmlFor="display-wheel" className="text-sm font-medium">Progress Wheel</Label>
               </div>
             </RadioGroup>
@@ -246,7 +263,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
               id="sound-alert" 
               checked={playSound}
               onCheckedChange={(checked) => setPlaySound(checked === true)}
-              className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+              className="border-2 border-gray-400 data-[state=checked]:border-white data-[state=checked]:bg-white dark:data-[state=checked]:ring-2 dark:data-[state=checked]:ring-white dark:data-[state=checked]:ring-offset-2"
             />
             <Label htmlFor="sound-alert" className="text-sm font-medium">
               Play sound when minimum time is reached
