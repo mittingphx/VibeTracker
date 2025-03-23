@@ -32,33 +32,48 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
     const radius = size / 2;
     const innerRadius = radius - thickness;
     const circumference = 2 * Math.PI * innerRadius;
-    const arc = circumference * normalizedValue;
-    const dashArray = `${arc} ${circumference}`;
-    const transform = `rotate(-90 ${radius} ${radius})`;
     
     // Determine min and max percentages for color transitions
-    const minPercentage = minValue > 0 ? (minValue / maxValue) * 100 : 0;
-    const maxPercentage = 100;
+    const minPercentage = minValue > 0 ? (minValue / maxValue) * 100 : 33; // Use 33% as default if not specified
+    const midPercentage = 66; // Use 66% as the middle section boundary
     
-    // Calculate current segment (pre-min, min-to-target, or post-target)
-    const isPreMin = value < minPercentage;
-    const isPostMax = value >= maxPercentage;
-    const isMiddle = !isPreMin && !isPostMax;
+    // Define the segment sizes (as fractions of the circle)
+    const segment1Size = minPercentage / 100;
+    const segment2Size = (midPercentage - minPercentage) / 100;
+    const segment3Size = (100 - midPercentage) / 100;
     
-    // Determine active color based on current segment
-    let activeColor;
-    if (isPreMin) {
-      activeColor = minColor;
-    } else if (isMiddle) {
-      activeColor = targetColor;
+    // Calculate brightness based on progress
+    // For each segment, we'll calculate its own brightness based on progress within that segment
+    
+    // Segment 1 (red) brightness
+    let segment1Brightness = 0.3; // Default dim
+    if (value < minPercentage) {
+      // Calculate brightness from 0.3 to 1 based on progress within segment 1
+      segment1Brightness = 0.3 + (0.7 * value / minPercentage);
     } else {
-      activeColor = overColor;
+      segment1Brightness = 1; // Full brightness when past this segment
     }
     
-    // Create gradient definitions for LED-like effect
-    const dimMinColor = fadeColor(minColor, 0.3);
-    const dimTargetColor = fadeColor(targetColor, 0.3);
-    const dimOverColor = fadeColor(overColor, 0.3);
+    // Segment 2 (yellow) brightness
+    let segment2Brightness = 0.3; // Default dim
+    if (value >= minPercentage && value < midPercentage) {
+      // Calculate brightness from 0.3 to 1 based on progress within segment 2
+      segment2Brightness = 0.3 + (0.7 * (value - minPercentage) / (midPercentage - minPercentage));
+    } else if (value >= midPercentage) {
+      segment2Brightness = 1; // Full brightness when past this segment
+    }
+    
+    // Segment 3 (green) brightness
+    let segment3Brightness = 0.3; // Default dim
+    if (value >= midPercentage) {
+      // Calculate brightness from 0.3 to 1 based on progress within segment 3
+      segment3Brightness = 0.3 + (0.7 * (value - midPercentage) / (100 - midPercentage));
+    }
+    
+    // Create colors with appropriate brightness
+    const segment1Color = fadeColor(minColor, segment1Brightness);
+    const segment2Color = fadeColor(targetColor, segment2Brightness);
+    const segment3Color = fadeColor(overColor, segment3Brightness);
     
     return (
       <div
@@ -72,59 +87,42 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
           viewBox={`0 0 ${size} ${size}`}
           style={{ transform: 'rotate(-90deg)' }}
         >
-          {/* Define gradients for LED-like effects */}
-          <defs>
-            <linearGradient id="minGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={dimMinColor} />
-              <stop offset="100%" stopColor={minColor} />
-            </linearGradient>
-            <linearGradient id="targetGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={dimTargetColor} />
-              <stop offset="100%" stopColor={targetColor} />
-            </linearGradient>
-            <linearGradient id="overGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={dimOverColor} />
-              <stop offset="100%" stopColor={overColor} />
-            </linearGradient>
-          </defs>
-          
-          {/* Background circles for each segment (dim version) */}
-          {/* Pre-min segment (0% to minPercentage) */}
+          {/* Segment 1 (Red) - First third (0 to 33%) */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={dimMinColor}
+            stroke={segment1Color}
             strokeWidth={thickness}
-            strokeDasharray={`${(circumference * minPercentage) / 100} ${circumference}`}
+            strokeDasharray={`${circumference * segment1Size} ${circumference}`}
             strokeDashoffset={0}
             className="transition-all duration-200 ease-in-out"
           />
           
-          {/* Min-to-target segment (minPercentage to 100%) */}
+          {/* Segment 2 (Yellow) - Second third (33% to 66%) */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={dimTargetColor}
+            stroke={segment2Color}
             strokeWidth={thickness}
-            strokeDasharray={`${(circumference * (maxPercentage - minPercentage)) / 100} ${circumference}`}
-            strokeDashoffset={-((circumference * minPercentage) / 100)}
+            strokeDasharray={`${circumference * segment2Size} ${circumference}`}
+            strokeDashoffset={-(circumference * segment1Size)}
             className="transition-all duration-200 ease-in-out"
           />
           
-          {/* Active progress overlay */}
+          {/* Segment 3 (Green) - Final third (66% to 100%) */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={activeColor}
+            stroke={segment3Color}
             strokeWidth={thickness}
-            strokeDasharray={dashArray}
-            strokeDashoffset={0}
+            strokeDasharray={`${circumference * segment3Size} ${circumference}`}
+            strokeDashoffset={-(circumference * (segment1Size + segment2Size))}
             className="transition-all duration-200 ease-in-out"
           />
         </svg>
@@ -135,7 +133,7 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
 
 ProgressWheel.displayName = "ProgressWheel";
 
-// Helper function to create a faded version of a color
+// Helper function to create a colored version of a color with specified opacity/brightness
 function fadeColor(hexColor: string, opacity: number): string {
   // Convert hex to RGB
   const r = parseInt(hexColor.slice(1, 3), 16);

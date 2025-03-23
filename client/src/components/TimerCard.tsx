@@ -356,8 +356,8 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
           <div className="flex justify-center items-center mt-2">
             <ProgressWheel 
               value={timer.progress} 
-              minValue={timer.minTime > 0 ? timer.minTime : 0}
-              maxValue={timer.maxTime || 100}
+              minValue={33} // Fixed at 33% for the first segment
+              maxValue={100} // Fixed at 100% for the full wheel
               size={100}
               thickness={15}
               minColor="#FF3B30" // iOS red
