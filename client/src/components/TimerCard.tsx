@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { ProgressWheel } from "@/components/ui/progress-wheel";
 import { Button } from "@/components/ui/button";
 import { Clock, Redo2, Undo2, Archive, MoreVertical, Settings, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -350,15 +351,30 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
           </div>
         </div>
         
-        {/* Progress Bar for Min/Max Time */}
-        <Progress 
-          value={timer.progress} 
-          className="h-2 mt-2"
-          indicatorStyle={{ backgroundColor: progressColor }}
-        />
+        {/* Progress Indicator (Bar or Wheel) */}
+        {timer.displayType === 'wheel' ? (
+          <div className="flex justify-center items-center mt-2">
+            <ProgressWheel 
+              value={timer.progress} 
+              minValue={timer.minTime > 0 ? timer.minTime : 0}
+              maxValue={timer.maxTime || 100}
+              size={100}
+              thickness={15}
+              minColor="#FF3B30" // iOS red
+              targetColor="#FFCC00" // iOS yellow
+              overColor="#34C759" // iOS green
+            />
+          </div>
+        ) : (
+          <Progress 
+            value={timer.progress} 
+            className="h-2 mt-2"
+            indicatorStyle={{ backgroundColor: progressColor }}
+          />
+        )}
         
         {/* Min/Max Time Display */}
-        <div className={`flex justify-between text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+        <div className={`flex justify-between text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} ${timer.displayType === 'wheel' ? 'mt-2' : 'mt-1'}`}>
           <span>Min: {formatTimeDuration(timer.minTime, true)}</span>
           {timer.maxTime && (
             <span>Target: {formatTimeDuration(timer.maxTime, true)}</span>

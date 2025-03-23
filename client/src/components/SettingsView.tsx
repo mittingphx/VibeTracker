@@ -82,6 +82,15 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [archivedTimers, setArchivedTimers] = useState<Timer[]>([]);
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
   
+  // Edit form state
+  const [editMinTime, setEditMinTime] = useState(5);
+  const [editMinTimeUnit, setEditMinTimeUnit] = useState<TimeUnit>("minutes");
+  const [editMaxTime, setEditMaxTime] = useState(0);
+  const [editMaxTimeUnit, setEditMaxTimeUnit] = useState<TimeUnit>("hours");
+  const [editPlaySound, setEditPlaySound] = useState(true);
+  const [editDisplayType, setEditDisplayType] = useState<"bar" | "wheel">("bar");
+  const [editCategory, setEditCategory] = useState("");
+  
   // Apply dark mode when component mounts or darkMode changes
   useEffect(() => {
     // Apply theme using the utility function
@@ -132,13 +141,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightedTimerId, isLoading]);
   
-  // State for editing timer settings
-  const [editMinTime, setEditMinTime] = useState<number>(0);
-  const [editMinTimeUnit, setEditMinTimeUnit] = useState<TimeUnit>("hours");
-  const [editMaxTime, setEditMaxTime] = useState<number>(0);
-  const [editMaxTimeUnit, setEditMaxTimeUnit] = useState<TimeUnit>("hours");
-  const [editPlaySound, setEditPlaySound] = useState(true);
-  const [editCategory, setEditCategory] = useState<string>("");
+  // Note: Edit form state is already defined above
 
   const handleToggleTimer = async (id: number, isEnabled: boolean) => {
     try {
@@ -494,6 +497,19 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           onCheckedChange={(checked) => handleToggleSoundAlert(timer.id, checked)}
                         />
                       </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Display Type</span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs ${timer.displayType === 'bar' ? 'font-bold' : ''}`}>Bar</span>
+                          <Switch
+                            checked={timer.displayType === 'wheel'}
+                            onCheckedChange={(checked) => 
+                              handleUpdateTimer(timer.id, { displayType: checked ? 'wheel' : 'bar' })
+                            }
+                          />
+                          <span className={`text-xs ${timer.displayType === 'wheel' ? 'font-bold' : ''}`}>Wheel</span>
+                        </div>
+                      </div>
                       <div className="flex gap-2 mt-2">
                         <Button 
                           variant="outline" 
@@ -586,6 +602,38 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           <Label htmlFor={`sound-alert-${timer.id}`}>
                             Play sound when minimum time is reached
                           </Label>
+                        </div>
+                        
+                        <div>
+                          <Label className="block text-sm font-medium mb-2">
+                            Display Type
+                          </Label>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="radio" 
+                                id={`display-bar-${timer.id}`} 
+                                name={`display-type-${timer.id}`}
+                                checked={editDisplayType === 'bar'}
+                                onChange={() => setEditDisplayType('bar')}
+                              />
+                              <Label htmlFor={`display-bar-${timer.id}`}>
+                                Bar
+                              </Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="radio" 
+                                id={`display-wheel-${timer.id}`} 
+                                name={`display-type-${timer.id}`}
+                                checked={editDisplayType === 'wheel'}
+                                onChange={() => setEditDisplayType('wheel')}
+                              />
+                              <Label htmlFor={`display-wheel-${timer.id}`}>
+                                Progress Wheel
+                              </Label>
+                            </div>
+                          </div>
                         </div>
                         
                         <div>
