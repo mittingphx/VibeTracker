@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface NewTimerModalProps {
   open: boolean;
@@ -35,6 +36,7 @@ const toSeconds = (value: number, unit: TimeUnit): number => {
 
 export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Default");
@@ -46,6 +48,15 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   const [displayType, setDisplayType] = useState<"bar" | "wheel">("wheel");
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a timer",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!name) {
       toast({
         title: "Error",
@@ -220,12 +231,12 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
               className="flex space-x-6"
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="bar" id="display-bar" />
-                <Label htmlFor="display-bar" className="text-sm">Progress Bar</Label>
+                <RadioGroupItem value="bar" id="display-bar" className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary" />
+                <Label htmlFor="display-bar" className="text-sm font-medium">Progress Bar</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="wheel" id="display-wheel" />
-                <Label htmlFor="display-wheel" className="text-sm">Progress Wheel</Label>
+                <RadioGroupItem value="wheel" id="display-wheel" className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary" />
+                <Label htmlFor="display-wheel" className="text-sm font-medium">Progress Wheel</Label>
               </div>
             </RadioGroup>
           </div>
@@ -235,8 +246,9 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
               id="sound-alert" 
               checked={playSound}
               onCheckedChange={(checked) => setPlaySound(checked === true)}
+              className="border-2 border-gray-400 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
             />
-            <Label htmlFor="sound-alert" className="text-sm">
+            <Label htmlFor="sound-alert" className="text-sm font-medium">
               Play sound when minimum time is reached
             </Label>
           </div>
