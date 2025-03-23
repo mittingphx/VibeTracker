@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TimerCard from "@/components/TimerCard";
 import TabBar from "@/components/TabBar";
 import ChartView from "@/components/ChartView";
@@ -54,10 +54,22 @@ export default function Home() {
     }
   }, [user]);
   
-  // Auto-launch timer creation modal when logged in with no timers
+  // Auto-launch timer creation modal only when logged in with no timers
+  // We track if we've checked for timers to prevent opening the modal unnecessarily
+  const hasCheckedTimers = useRef(false);
+  
   useEffect(() => {
-    if (user && !isLoading && timers.length === 0) {
+    // Only auto-open the modal if:
+    // 1. User is logged in
+    // 2. We've finished loading timers
+    // 3. There are actually zero timers
+    // 4. We haven't already checked for timers (to prevent reopening on re-renders)
+    if (user && !isLoading && timers.length === 0 && !hasCheckedTimers.current) {
+      hasCheckedTimers.current = true;
       setShowNewTimerModal(true);
+    } else if (timers.length > 0 && !hasCheckedTimers.current) {
+      // If we have timers, mark that we've checked
+      hasCheckedTimers.current = true;
     }
   }, [user, isLoading, timers.length]);
   
