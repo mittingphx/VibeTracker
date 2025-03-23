@@ -25,55 +25,54 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
     overColor = "#34C759", // iOS green for over target
     ...props 
   }, ref) => {
-    // Normalize value between 0 and 1 for circle calculation
-    const normalizedValue = Math.min(Math.max(value, 0), 100) / 100;
-    
     // Calculate the circle parameters
     const radius = size / 2;
     const innerRadius = radius - thickness;
     const circumference = 2 * Math.PI * innerRadius;
     
-    // Determine min and max percentages for color transitions
-    const minPercentage = minValue > 0 ? (minValue / maxValue) * 100 : 33; // Use 33% as default if not specified
-    const midPercentage = 66; // Use 66% as the middle section boundary
+    // Determine our segment boundaries (as percentages 0-100)
+    const minPercentage = 33; // First segment (red) takes up first 33% of wheel
+    const midPercentage = 66; // Second segment (yellow) takes up next 33%
+    // Third segment (green) takes up final 34%
     
-    // Define the segment sizes (as fractions of the circle)
+    // Define the segment sizes (as fractions of the circle circumference)
     const segment1Size = minPercentage / 100;
     const segment2Size = (midPercentage - minPercentage) / 100;
     const segment3Size = (100 - midPercentage) / 100;
     
-    // Calculate brightness based on progress
-    // For each segment, we'll calculate its own brightness based on progress within that segment
+    // Calculate the lit portion for each segment
+    let segment1Lit = 0;
+    let segment2Lit = 0;
+    let segment3Lit = 0;
     
-    // Segment 1 (red) brightness
-    let segment1Brightness = 0.3; // Default dim
-    if (value < minPercentage) {
-      // Calculate brightness from 0.3 to 1 based on progress within segment 1
-      segment1Brightness = 0.3 + (0.7 * value / minPercentage);
+    // First segment (Red) - fills up as progress goes from 0% to 33%
+    if (value <= minPercentage) {
+      segment1Lit = (value / minPercentage) * segment1Size;
     } else {
-      segment1Brightness = 1; // Full brightness when past this segment
+      segment1Lit = segment1Size; // Completely lit
     }
     
-    // Segment 2 (yellow) brightness
-    let segment2Brightness = 0.3; // Default dim
-    if (value >= minPercentage && value < midPercentage) {
-      // Calculate brightness from 0.3 to 1 based on progress within segment 2
-      segment2Brightness = 0.3 + (0.7 * (value - minPercentage) / (midPercentage - minPercentage));
-    } else if (value >= midPercentage) {
-      segment2Brightness = 1; // Full brightness when past this segment
+    // Second segment (Yellow) - fills up as progress goes from 33% to 66%
+    if (value > minPercentage && value <= midPercentage) {
+      segment2Lit = ((value - minPercentage) / (midPercentage - minPercentage)) * segment2Size;
+    } else if (value > midPercentage) {
+      segment2Lit = segment2Size; // Completely lit
     }
     
-    // Segment 3 (green) brightness
-    let segment3Brightness = 0.3; // Default dim
-    if (value >= midPercentage) {
-      // Calculate brightness from 0.3 to 1 based on progress within segment 3
-      segment3Brightness = 0.3 + (0.7 * (value - midPercentage) / (100 - midPercentage));
+    // Third segment (Green) - fills up as progress goes from 66% to 100%
+    if (value > midPercentage) {
+      segment3Lit = ((value - midPercentage) / (100 - midPercentage)) * segment3Size;
     }
     
-    // Create colors with appropriate brightness
-    const segment1Color = fadeColor(minColor, segment1Brightness);
-    const segment2Color = fadeColor(targetColor, segment2Brightness);
-    const segment3Color = fadeColor(overColor, segment3Brightness);
+    // Dim color versions (at 30% opacity)
+    const dimRedColor = fadeColor(minColor, 0.3);
+    const dimYellowColor = fadeColor(targetColor, 0.3);
+    const dimGreenColor = fadeColor(overColor, 0.3);
+    
+    // Bright colors (full opacity)
+    const brightRedColor = minColor;
+    const brightYellowColor = targetColor;
+    const brightGreenColor = overColor;
     
     return (
       <div
@@ -87,44 +86,88 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
           viewBox={`0 0 ${size} ${size}`}
           style={{ transform: 'rotate(-90deg)' }}
         >
-          {/* Segment 1 (Red) - First third (0 to 33%) */}
+          {/* Background segments (dim colors) */}
+          {/* Red segment background */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={segment1Color}
+            stroke={dimRedColor}
             strokeWidth={thickness}
             strokeDasharray={`${circumference * segment1Size} ${circumference}`}
             strokeDashoffset={0}
-            className="transition-all duration-200 ease-in-out"
           />
           
-          {/* Segment 2 (Yellow) - Second third (33% to 66%) */}
+          {/* Yellow segment background */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={segment2Color}
+            stroke={dimYellowColor}
             strokeWidth={thickness}
             strokeDasharray={`${circumference * segment2Size} ${circumference}`}
             strokeDashoffset={-(circumference * segment1Size)}
-            className="transition-all duration-200 ease-in-out"
           />
           
-          {/* Segment 3 (Green) - Final third (66% to 100%) */}
+          {/* Green segment background */}
           <circle
             cx={radius}
             cy={radius}
             r={innerRadius}
             fill="none"
-            stroke={segment3Color}
+            stroke={dimGreenColor}
             strokeWidth={thickness}
             strokeDasharray={`${circumference * segment3Size} ${circumference}`}
             strokeDashoffset={-(circumference * (segment1Size + segment2Size))}
-            className="transition-all duration-200 ease-in-out"
           />
+          
+          {/* Progress indicators (bright colors) - these get filled in as progress increases */}
+          {/* Red segment fill */}
+          {segment1Lit > 0 && (
+            <circle
+              cx={radius}
+              cy={radius}
+              r={innerRadius}
+              fill="none"
+              stroke={brightRedColor}
+              strokeWidth={thickness}
+              strokeDasharray={`${circumference * segment1Lit} ${circumference}`}
+              strokeDashoffset={0}
+              className="transition-all duration-200 ease-in-out"
+            />
+          )}
+          
+          {/* Yellow segment fill */}
+          {segment2Lit > 0 && (
+            <circle
+              cx={radius}
+              cy={radius}
+              r={innerRadius}
+              fill="none"
+              stroke={brightYellowColor}
+              strokeWidth={thickness}
+              strokeDasharray={`${circumference * segment2Lit} ${circumference}`}
+              strokeDashoffset={-(circumference * segment1Size)}
+              className="transition-all duration-200 ease-in-out"
+            />
+          )}
+          
+          {/* Green segment fill */}
+          {segment3Lit > 0 && (
+            <circle
+              cx={radius}
+              cy={radius}
+              r={innerRadius}
+              fill="none"
+              stroke={brightGreenColor}
+              strokeWidth={thickness}
+              strokeDasharray={`${circumference * segment3Lit} ${circumference}`}
+              strokeDashoffset={-(circumference * (segment1Size + segment2Size))}
+              className="transition-all duration-200 ease-in-out"
+            />
+          )}
         </svg>
       </div>
     );
@@ -133,8 +176,10 @@ const ProgressWheel = React.forwardRef<HTMLDivElement, ProgressWheelProps>(
 
 ProgressWheel.displayName = "ProgressWheel";
 
-// Helper function to create a colored version of a color with specified opacity/brightness
+// Helper function to create a colored version of a color with specified opacity
 function fadeColor(hexColor: string, opacity: number): string {
+  if (opacity >= 1) return hexColor;
+  
   // Convert hex to RGB
   const r = parseInt(hexColor.slice(1, 3), 16);
   const g = parseInt(hexColor.slice(3, 5), 16);
