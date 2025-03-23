@@ -96,18 +96,18 @@ export default function ChartView({ onClose }: ChartViewProps) {
 
   // Define a set of distinct high-contrast colors for charts
   const distinctChartColors = [
-    "#FF3B30", // Red
-    "#5856D6", // Purple
-    "#FF9500", // Orange
-    "#34C759", // Green
-    "#007AFF", // Blue
-    "#AF52DE", // Magenta
-    "#FFCC00", // Yellow
-    "#00C7BE", // Teal
-    "#FF2D55", // Pink
-    "#5AC8FA", // Light Blue
-    "#E0777D", // Salmon
-    "#A2845E", // Brown
+    "#1E88E5", // Blue
+    "#D81B60", // Pink
+    "#FFC107", // Amber
+    "#004D40", // Teal
+    "#9C27B0", // Purple
+    "#FF5722", // Deep Orange
+    "#43A047", // Green
+    "#795548", // Brown
+    "#607D8B", // Blue Grey
+    "#F57F17", // Dark Amber
+    "#00B0FF", // Light Blue
+    "#76FF03", // Light Green
   ];
   
   // Function to assign a distinct chart color for each timer
@@ -349,7 +349,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                     />
                     {timers
                       .filter(timer => selectedTimerIds.includes(timer.id))
-                      .map(timer => (
+                      .map((timer, index) => (
                         <VictoryScatter
                           key={timer.id}
                           data={averageTimeBetweenPresses.filter(d => d.timerId === timer.id)}
@@ -358,7 +358,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                           size={8}
                           style={{ 
                             data: { 
-                              fill: timer.color,
+                              fill: getChartColorForTimer(index),
                               stroke: isDarkMode ? "#333" : "white",
                               strokeWidth: 1
                             }
@@ -435,14 +435,14 @@ export default function ChartView({ onClose }: ChartViewProps) {
                     {/* Render all lines first, then all scatter points */}
                     {timers
                       .filter(timer => selectedTimerIds.includes(timer.id))
-                      .map(timer => (
+                      .map((timer, index) => (
                         <VictoryLine
                           key={`line-${timer.id}`}
                           data={pressEvents.filter(d => d.timerId === timer.id)}
                           x="timestamp"
                           y="minutesSinceLast"
                           style={{
-                            data: { stroke: timer.color, strokeOpacity: 0.5, strokeWidth: 2 }
+                            data: { stroke: getChartColorForTimer(index), strokeOpacity: 0.5, strokeWidth: 2 }
                           }}
                         />
                       ))}
