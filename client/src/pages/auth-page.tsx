@@ -548,7 +548,7 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Choose a username" {...field} />
+                          <Input placeholder="Choose a username" autoComplete="username" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -565,6 +565,7 @@ export default function AuthPage() {
                           <Input
                             type="password"
                             placeholder="Create a password"
+                            autoComplete="new-password"
                             {...field}
                           />
                         </FormControl>
@@ -583,6 +584,7 @@ export default function AuthPage() {
                           <Input
                             type="password"
                             placeholder="Confirm your password"
+                            autoComplete="new-password"
                             {...field}
                           />
                         </FormControl>
@@ -600,6 +602,7 @@ export default function AuthPage() {
                         <FormControl>
                           <Input
                             placeholder="Example: What was your first pet's name?"
+                            autoComplete="off"
                             {...field}
                           />
                         </FormControl>
@@ -615,7 +618,7 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Security Answer</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your answer" {...field} />
+                          <Input placeholder="Your answer" autoComplete="off" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -631,6 +634,7 @@ export default function AuthPage() {
                         <FormControl>
                           <Input
                             placeholder="Set a 4-digit PIN"
+                            autoComplete="off"
                             {...field}
                             maxLength={4}
                             inputMode="numeric"
