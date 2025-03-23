@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -14,11 +15,13 @@ interface NewTimerModalProps {
   onClose: () => void;
 }
 
-type TimeUnit = "minutes" | "hours" | "days";
+type TimeUnit = "seconds" | "minutes" | "hours" | "days";
 
 // Helper for converting time to seconds
 const toSeconds = (value: number, unit: TimeUnit): number => {
   switch (unit) {
+    case "seconds":
+      return value;
     case "minutes":
       return value * 60;
     case "hours":
@@ -40,6 +43,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   const [maxTime, setMaxTime] = useState<number | "">("");
   const [maxTimeUnit, setMaxTimeUnit] = useState<TimeUnit>("hours");
   const [playSound, setPlaySound] = useState(true);
+  const [displayType, setDisplayType] = useState<"bar" | "wheel">("wheel");
 
   const handleSubmit = async () => {
     if (!name) {
@@ -77,6 +81,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
         isEnabled: true,
         playSound,
         color: "#007AFF", // iOS blue default
+        displayType, // Add display type to the timer data
       };
 
       await apiRequest("POST", "/api/timers", timerData);
@@ -157,6 +162,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="seconds">Seconds</SelectItem>
                   <SelectItem value="minutes">Minutes</SelectItem>
                   <SelectItem value="hours">Hours</SelectItem>
                   <SelectItem value="days">Days</SelectItem>
@@ -187,12 +193,33 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="seconds">Seconds</SelectItem>
                   <SelectItem value="minutes">Minutes</SelectItem>
                   <SelectItem value="hours">Hours</SelectItem>
                   <SelectItem value="days">Days</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label className="block text-sm font-medium text-gray-700 mb-2">
+              Display Type
+            </Label>
+            <RadioGroup 
+              value={displayType} 
+              onValueChange={(value) => setDisplayType(value as "bar" | "wheel")}
+              className="flex space-x-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="bar" id="display-bar" />
+                <Label htmlFor="display-bar" className="text-sm">Progress Bar</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="wheel" id="display-wheel" />
+                <Label htmlFor="display-wheel" className="text-sm">Progress Wheel</Label>
+              </div>
+            </RadioGroup>
           </div>
           
           <div className="flex items-center space-x-2">
