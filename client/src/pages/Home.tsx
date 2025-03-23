@@ -108,7 +108,7 @@ export default function Home() {
       {/* Header */}
       <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-3 pb-2 px-4 flex justify-between items-center border-b`}>
         <div className="flex items-center gap-2">
-          <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="w-auto h-auto" style={{ width: "5rem", height: "5rem" }} />
+          <img src="/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="w-auto h-auto" style={{ width: "5rem", height: "5rem" }} />
           <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>VibeTracker</h1>
         </div>
         <Button
@@ -184,7 +184,7 @@ export default function Home() {
       }
       
       {/* About View */}
-      {activeTab === "about" && <AboutView />}
+      {activeTab === "about" && <AboutView onClose={() => setActiveTab("timers")} />}
 
       {/* Bottom Tab Bar */}
       <TabBar activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
