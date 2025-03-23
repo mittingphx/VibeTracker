@@ -106,7 +106,7 @@ export default function Home() {
   return (
     <div className={`max-w-md mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'} min-h-screen flex flex-col`}>
       {/* Header */}
-      <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-12 pb-2 px-4 flex justify-between items-center border-b`}>
+      <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-3 pb-2 px-4 flex justify-between items-center border-b`}>
         <div className="flex items-center gap-2">
           <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="w-auto h-auto" style={{ width: "5rem", height: "5rem" }} />
           <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>VibeTracker</h1>

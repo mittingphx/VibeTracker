@@ -183,24 +183,22 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
   const buttonDisabled = isUpdating || (!timer.canPress && Boolean(timer.lastPressed)) || !timer.isEnabled;
 
   return (
-    <Card className={`mb-3 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-      <CardContent className="px-5 py-3 flex flex-col">
-        <div className="flex justify-between items-start">
+    <Card className={`mb-4 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      <CardContent className="px-5 py-4 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
           <div className="flex-1">
-            {/* Timer Label - Moved to same line as controls to save vertical space */}
-            <div className="flex items-center">
-              <div>
-                <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
-                {timer.category && timer.category !== "Default" && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
-                    {timer.category}
-                  </span>
-                )}
-              </div>
+            {/* Timer Label */}
+            <div>
+              <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{timer.label}</h2>
+              {timer.category && timer.category !== "Default" && (
+                <span className={`text-xs px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
+                  {timer.category}
+                </span>
+              )}
             </div>
             
-            {/* Timer Elapsed Time - Adjusted spacing */}
-            <p className={`text-3xl font-bold ${timeTextColor} mt-0`}>
+            {/* Timer Elapsed Time */}
+            <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
               {formatTimeDuration(timer.elapsedTime)}
             </p>
             <p className={`text-sm ${timeTextColor} -mt-1`}>
@@ -210,22 +208,22 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
             </p>
             
             {/* Last Clicked Date */}
-            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-0`}>
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
               {timer.lastPressed 
                 ? `Last: ${formatDistanceToNow(timer.lastPressed, { addSuffix: true })}` 
                 : "No records yet"}
             </p>
           </div>
           
-          {/* Right side: Control buttons and timer - More compact */}
+          {/* Right side: Control buttons and timer */}
           <div className="flex flex-col items-end ml-2">
-            {/* Top row: Control buttons - Moved up */}
-            <div className="flex items-center -mt-1">
+            {/* Top row: Control buttons */}
+            <div className="flex items-center">
               {/* Undo Button */}
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-7 w-7`}
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
                 onClick={handleUndo}
                 disabled={!canUndo || isUpdating || isUndoing || isRedoing}
               >
@@ -241,7 +239,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-7 w-7`}
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
                 onClick={handleRedo}
                 disabled={!canRedo || isUpdating || isUndoing || isRedoing}
               >
@@ -256,7 +254,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
               {/* Timer Actions Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className={`h-7 w-7 ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                  <Button variant="ghost" size="icon" className={`h-8 w-8 ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -322,14 +320,14 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
             </div>
             
             {/* Bottom row: Timer and progress wheel */}
-            <div className="flex items-center mt-1">
+            <div className="flex items-center mt-2">
               {/* Progress Wheel - Only when wheel display type is selected */}
               {timer.displayType === 'wheel' && (
                 <div className="mr-3">
                   <ProgressWheel 
                     value={timer.progress}
-                    size={75}
-                    thickness={11}
+                    size={80}
+                    thickness={12}
                     minColor="#FF3B30" // iOS red
                     targetColor="#FFCC00" // iOS yellow
                     overColor="#34C759" // iOS green
