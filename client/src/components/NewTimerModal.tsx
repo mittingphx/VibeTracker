@@ -85,6 +85,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
       }
 
       const timerData = {
+        userId: user.id, // Include the user ID from the authenticated user
         label: name,
         category: category || "Default",
         minTime: minTimeSeconds,
