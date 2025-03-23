@@ -523,9 +523,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           <span className={`text-xs ${timer.displayType === 'bar' ? 'font-bold' : ''}`}>Bar</span>
                           <Switch
                             checked={timer.displayType === 'wheel'}
-                            onCheckedChange={(checked) => 
-                              handleToggleDisplayType(timer.id, checked ? 'wheel' : 'bar')
-                            }
+                            onCheckedChange={(checked) => {
+                              const newDisplayType = checked ? 'wheel' : 'bar';
+                              handleToggleDisplayType(timer.id, newDisplayType);
+                            }}
                           />
                           <span className={`text-xs ${timer.displayType === 'wheel' ? 'font-bold' : ''}`}>Wheel</span>
                         </div>
