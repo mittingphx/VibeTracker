@@ -84,7 +84,15 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
         displayType, // Add display type to the timer data
       };
 
-      await apiRequest("POST", "/api/timers", timerData);
+      console.log("Submitting timer with data:", timerData);
+      
+      try {
+        const response = await apiRequest("POST", "/api/timers", timerData);
+        console.log("Timer creation response:", response);
+      } catch (error) {
+        console.error("Error submitting timer:", error);
+        throw error;
+      }
       
       queryClient.invalidateQueries({ queryKey: ["/api/timers"] });
       
