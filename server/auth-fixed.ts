@@ -35,16 +35,17 @@ export function setupAuth(app: Express) {
   // Generate a random session secret if not provided in environment
   const SESSION_SECRET = process.env.SESSION_SECRET || randomBytes(32).toString("hex");
   
-  // Configure session middleware
+  // Configure session middleware with proper settings
   app.use(
     session({
       secret: SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
+      resave: true, // Changed to true for better compatibility
+      saveUninitialized: true, // Changed to true to ensure session is always created
       cookie: {
-        secure: process.env.NODE_ENV === "production",
+        secure: false, // Set to false to ensure cookies work in all environments
         // Cookie expiration will be set dynamically based on stayLoggedIn parameter
-        maxAge: 1000 * 60 * 60 * 24, // Default to 1 day
+        maxAge: 1000 * 60 * 60 * 24 * 30, // Default to 30 days for better persistence
+        sameSite: 'lax' // Add sameSite for better security
       },
       store: storage.sessionStore,
     })
@@ -103,9 +104,18 @@ export function setupAuth(app: Express) {
       // Log the user in automatically after registration
       req.login(user, (err) => {
         if (err) return next(err);
-        // Return user without password
-        const { password, ...userWithoutPassword } = user;
-        res.status(201).json(userWithoutPassword);
+        
+        // Explicitly save the session to ensure it's stored before sending response
+        req.session.save((err) => {
+          if (err) return next(err);
+          
+          // Log session info for debugging
+          console.log("Session saved after registration. Session ID:", req.sessionID);
+          
+          // Return user without password
+          const { password, ...userWithoutPassword } = user;
+          res.status(201).json(userWithoutPassword);
+        });
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -133,9 +143,18 @@ export function setupAuth(app: Express) {
         
         req.login(user, (err) => {
           if (err) return next(err);
-          // Return user without password
-          const { password, ...userWithoutPassword } = user as SelectUser;
-          res.json(userWithoutPassword);
+          
+          // Explicitly save the session to ensure it's stored before sending response
+          req.session.save((err) => {
+            if (err) return next(err);
+            
+            // Log session info for debugging
+            console.log("Session saved after login. Session ID:", req.sessionID);
+            
+            // Return user without password
+            const { password, ...userWithoutPassword } = user as SelectUser;
+            res.json(userWithoutPassword);
+          });
         });
       }
     )(req, res, next);
@@ -143,17 +162,35 @@ export function setupAuth(app: Express) {
 
   // Logout route
   app.post("/api/logout", (req: Request, res: Response, next: NextFunction) => {
+    // Log the session being destroyed
+    console.log("Logging out session ID:", req.sessionID);
+    
     req.logout((err) => {
       if (err) return next(err);
-      res.sendStatus(200);
+      
+      // Destroy the session completely
+      req.session.destroy((err) => {
+        if (err) return next(err);
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        res.sendStatus(200);
+      });
     });
   });
 
   // Get current user route
   app.get("/api/user", (req: Request, res: Response) => {
+    // Log session information for debugging
+    console.log("Session check - Session ID:", req.sessionID);
+    console.log("User authenticated:", req.isAuthenticated());
+    
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
+    
+    // Log successful authentication
+    console.log("Authenticated user:", req.user?.username);
+    
     // Return user without password
     const { password, ...userWithoutPassword } = req.user as SelectUser;
     res.json(userWithoutPassword);
@@ -298,5 +335,20 @@ export function setupAuth(app: Express) {
       console.error("Security update error:", error);
       res.status(500).json({ message: "Security update failed" });
     }
+  });
+  
+  // Debug endpoint to check session status
+  app.get("/api/debug/session", (req: Request, res: Response) => {
+    console.log("Debug session info:");
+    console.log("Session ID:", req.sessionID);
+    console.log("Is authenticated:", req.isAuthenticated());
+    console.log("Session data:", req.session);
+    
+    res.json({
+      sessionId: req.sessionID,
+      isAuthenticated: req.isAuthenticated(),
+      user: req.isAuthenticated() ? req.user?.username : null,
+      hasCookie: !!req.headers.cookie
+    });
   });
 }
