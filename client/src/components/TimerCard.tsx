@@ -284,90 +284,93 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
             </p>
           </div>
           
-          {/* Timer Controls */}
-          <div className="flex flex-col items-center">
-            {/* Undo Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
-              onClick={handleUndo}
-              disabled={!canUndo || isUpdating || isUndoing || isRedoing}
-            >
-              <Undo2 className="h-4 w-4" />
-              {isUndoing && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
-                </span>
-              )}
-            </Button>
+          {/* Timer Controls - Redesigned with progress wheel to the left of the button when in wheel mode */}
+          <div className="flex items-center">
+            {/* Progress Wheel - Only when wheel display type is selected */}
+            {timer.displayType === 'wheel' && (
+              <div className="mr-4">
+                <ProgressWheel 
+                  value={timer.progress}
+                  size={80}
+                  thickness={12}
+                  minColor="#FF3B30" // iOS red
+                  targetColor="#FFCC00" // iOS yellow
+                  overColor="#34C759" // iOS green
+                />
+              </div>
+            )}
             
-            {/* Main Timer Button */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    style={{ backgroundColor: buttonDisabled ? "#C7C7CC" : timer.color }}
-                    size="icon"
-                    className="text-white rounded-full w-14 h-14 flex items-center justify-center mt-1 shadow-md"
-                    onClick={handleTimerPress}
-                    disabled={buttonDisabled}
-                  >
-                    <Clock className="h-6 w-6" />
-                    {isUpdating && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      </span>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="p-2 max-w-[230px] text-center">
-                  {!timer.isEnabled 
-                    ? "Timer is disabled. Enable it in settings."
-                    : !timer.canPress 
-                      ? (timer.lastPressed 
-                          ? `Must wait ${formatTimeDuration(timer.minTime)} before next press.`
-                          : `First press is ready! Click to start tracking.`)
-                      : isUpdating
-                        ? "Processing..." 
-                        : "Press to record now"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            {/* Redo Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 mt-1 h-8 w-8`}
-              onClick={handleRedo}
-              disabled={!canRedo || isUpdating || isUndoing || isRedoing}
-            >
-              <Redo2 className="h-4 w-4" />
-              {isRedoing && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
-                </span>
-              )}
-            </Button>
+            <div className="flex flex-col items-center">
+              {/* Undo Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 h-8 w-8`}
+                onClick={handleUndo}
+                disabled={!canUndo || isUpdating || isUndoing || isRedoing}
+              >
+                <Undo2 className="h-4 w-4" />
+                {isUndoing && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
+                  </span>
+                )}
+              </Button>
+              
+              {/* Main Timer Button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      style={{ backgroundColor: buttonDisabled ? "#C7C7CC" : timer.color }}
+                      size="icon"
+                      className="text-white rounded-full w-14 h-14 flex items-center justify-center mt-1 shadow-md"
+                      onClick={handleTimerPress}
+                      disabled={buttonDisabled}
+                    >
+                      <Clock className="h-6 w-6" />
+                      {isUpdating && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </span>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="p-2 max-w-[230px] text-center">
+                    {!timer.isEnabled 
+                      ? "Timer is disabled. Enable it in settings."
+                      : !timer.canPress 
+                        ? (timer.lastPressed 
+                            ? `Must wait ${formatTimeDuration(timer.minTime)} before next press.`
+                            : `First press is ready! Click to start tracking.`)
+                        : isUpdating
+                          ? "Processing..." 
+                          : "Press to record now"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Redo Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} p-1 mt-1 h-8 w-8`}
+                onClick={handleRedo}
+                disabled={!canRedo || isUpdating || isUndoing || isRedoing}
+              >
+                <Redo2 className="h-4 w-4" />
+                {isRedoing && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <div className={`w-3 h-3 border-2 ${isDarkMode ? 'border-gray-400' : 'border-gray-500'} border-t-transparent rounded-full animate-spin`}></div>
+                  </span>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
         
-        {/* Progress Indicator (Bar or Wheel) */}
-        {timer.displayType === 'wheel' ? (
-          <div className="flex justify-center items-center mt-2">
-            <ProgressWheel 
-              value={timer.progress} 
-              // Let the component use its default segment proportions (33%, 33%, 34%)
-              // instead of hardcoding values that don't reflect the actual timer settings
-              size={100}
-              thickness={15}
-              minColor="#FF3B30" // iOS red
-              targetColor="#FFCC00" // iOS yellow
-              overColor="#34C759" // iOS green
-            />
-          </div>
-        ) : (
+        {/* Progress bar (only shown when display type is 'bar') */}
+        {timer.displayType !== 'wheel' && (
           <Progress 
             value={timer.progress} 
             className="h-2 mt-2"
