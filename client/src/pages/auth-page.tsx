@@ -433,7 +433,7 @@ export default function AuthPage() {
       <div className="w-full md:w-1/2 flex flex-col justify-center p-8">
         <div className="max-w-md mx-auto w-full">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold mb-2">VibeTimer</h2>
+            <h2 className="text-3xl font-bold mb-2">VibeTracker</h2>
             <p className="text-gray-500 dark:text-gray-400">
               Track your activities and optimize your time
             </p>
@@ -670,7 +670,7 @@ export default function AuthPage() {
             <TimerOff className="h-16 w-16" />
           </div>
           <h1 className="text-4xl font-bold mb-6 text-center dark:text-white">
-            Welcome to VibeTimer
+            Welcome to VibeTracker
           </h1>
           <div className="space-y-6 text-gray-600 dark:text-gray-300">
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">

@@ -1,4 +1,4 @@
-# VibeTimer
+# VibeTracker
 
 A dynamic time tracking mobile application designed to transform productivity management into an engaging, visually compelling experience. The app combines intuitive design with powerful analytics to help users understand and optimize their time usage.
 
