@@ -36,16 +36,40 @@ export default function ChartView({ onClose }: ChartViewProps) {
   const [chartType, setChartType] = useState<ChartType>("count");
   
   // Track which timers are selected for chart display
-  const [selectedTimerIds, setSelectedTimerIds] = useState<number[]>(
-    timers.map(timer => timer.id)
-  );
+  // Use localStorage to persist selection between sessions
+  const [selectedTimerIds, setSelectedTimerIds] = useState<number[]>(() => {
+    // Try to load from localStorage first
+    const savedSelection = localStorage.getItem('chartSelectedTimers');
+    
+    if (savedSelection) {
+      try {
+        const parsedSelection = JSON.parse(savedSelection);
+        // Make sure all currently available timers are included by default
+        const allCurrentTimerIds = timers.map(timer => timer.id);
+        // Merge saved selection with any new timers that weren't in the saved selection
+        return Array.from(new Set([...parsedSelection, ...allCurrentTimerIds]));
+      } catch (e) {
+        // If parsing fails, default to all timers
+        return timers.map(timer => timer.id);
+      }
+    } else {
+      // Default: select all timers
+      return timers.map(timer => timer.id);
+    }
+  });
 
   // Handle toggling a timer selection
   const toggleTimerSelection = (timerId: number) => {
     if (selectedTimerIds.includes(timerId)) {
-      setSelectedTimerIds(selectedTimerIds.filter(id => id !== timerId));
+      const newSelection = selectedTimerIds.filter(id => id !== timerId);
+      setSelectedTimerIds(newSelection);
+      // Save to localStorage
+      localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
     } else {
-      setSelectedTimerIds([...selectedTimerIds, timerId]);
+      const newSelection = [...selectedTimerIds, timerId];
+      setSelectedTimerIds(newSelection);
+      // Save to localStorage
+      localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
     }
   };
 
