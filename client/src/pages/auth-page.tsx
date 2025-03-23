@@ -6,22 +6,44 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { insertUserSchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, TimerOff, KeyRound, HelpCircle, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  TimerOff,
+  KeyRound,
+  HelpCircle,
+  ArrowLeft,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 // Create authentication schemas based on insert user schema
-const loginSchema = insertUserSchema.pick({
-  username: true,
-  password: true,
-}).extend({
-  stayLoggedIn: z.boolean().default(false)
-});
+const loginSchema = insertUserSchema
+  .pick({
+    username: true,
+    password: true,
+  })
+  .extend({
+    stayLoggedIn: z.boolean().default(false),
+  });
 
 // Add password confirmation and security fields for registration
 const registerSchema = insertUserSchema
@@ -33,7 +55,10 @@ const registerSchema = insertUserSchema
     confirmPassword: z.string().min(1, "Confirm password is required"),
     securityQuestion: z.string().min(3, "Security question is required"),
     securityAnswer: z.string().min(1, "Security answer is required"),
-    recoveryPin: z.string().length(4, "Recovery PIN must be 4 digits").regex(/^\d+$/, "PIN must contain only digits"),
+    recoveryPin: z
+      .string()
+      .length(4, "Recovery PIN must be 4 digits")
+      .regex(/^\d+$/, "PIN must contain only digits"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -71,33 +96,33 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
-      stayLoggedIn: false
+      stayLoggedIn: false,
     },
   });
 
   // Add loading state management
   useEffect(() => {
     if (loginMutation.isPending || registerMutation.isPending) {
-      document.body.style.opacity = '0.7';
+      document.body.style.opacity = "0.7";
     } else {
-      document.body.style.opacity = '1';
+      document.body.style.opacity = "1";
     }
     return () => {
-      document.body.style.opacity = '1';
+      document.body.style.opacity = "1";
     };
   }, [loginMutation.isPending, registerMutation.isPending]);
 
   const onLoginSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data);
   };
-  
+
   // Password recovery handlers
   const startRecovery = () => {
     setRecoveryMode(true);
     setRecoveryStep(1);
     setErrorMsg("");
   };
-  
+
   const cancelRecovery = () => {
     setRecoveryMode(false);
     setRecoveryStep(1);
@@ -109,28 +134,30 @@ export default function AuthPage() {
     setConfirmNewPassword("");
     setErrorMsg("");
   };
-  
+
   const checkUsername = async () => {
     if (!recoveryUsername) {
       setErrorMsg("Please enter your username");
       return;
     }
-    
+
     setRecoveryLoading(true);
     setErrorMsg("");
-    
+
     try {
-      const response = await apiRequest("POST", "/api/recovery/check", { 
-        username: recoveryUsername 
+      const response = await apiRequest("POST", "/api/recovery/check", {
+        username: recoveryUsername,
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setSecurityQuestion(data.securityQuestion);
         setRecoveryStep(2);
       } else {
         const error = await response.json();
-        setErrorMsg(error.message || "User not found or no security question set");
+        setErrorMsg(
+          error.message || "User not found or no security question set",
+        );
       }
     } catch (error) {
       setErrorMsg("An error occurred. Please try again.");
@@ -138,22 +165,22 @@ export default function AuthPage() {
       setRecoveryLoading(false);
     }
   };
-  
+
   const verifySecurityAnswer = async () => {
     if (!securityAnswer) {
       setErrorMsg("Please enter your security answer");
       return;
     }
-    
+
     setRecoveryLoading(true);
     setErrorMsg("");
-    
+
     try {
-      const response = await apiRequest("POST", "/api/recovery/verify", { 
+      const response = await apiRequest("POST", "/api/recovery/verify", {
         username: recoveryUsername,
-        securityAnswer: securityAnswer
+        securityAnswer: securityAnswer,
       });
-      
+
       if (response.ok) {
         setRecoveryStep(3);
       } else {
@@ -166,38 +193,38 @@ export default function AuthPage() {
       setRecoveryLoading(false);
     }
   };
-  
+
   const resetPassword = async () => {
     if (!recoveryPin) {
       setErrorMsg("Please enter your recovery PIN");
       return;
     }
-    
+
     if (!newPassword) {
       setErrorMsg("Please enter a new password");
       return;
     }
-    
+
     if (newPassword !== confirmNewPassword) {
       setErrorMsg("Passwords do not match");
       return;
     }
-    
+
     setRecoveryLoading(true);
     setErrorMsg("");
-    
+
     try {
-      const response = await apiRequest("POST", "/api/recovery/reset", { 
+      const response = await apiRequest("POST", "/api/recovery/reset", {
         username: recoveryUsername,
         recoveryPin: recoveryPin,
-        newPassword: newPassword
+        newPassword: newPassword,
       });
-      
+
       if (response.ok) {
         toast({
           title: "Password reset successful",
           description: "You can now log in with your new password",
-          variant: "default"
+          variant: "default",
         });
         cancelRecovery();
       } else {
@@ -228,20 +255,23 @@ export default function AuthPage() {
     try {
       const { confirmPassword, ...userData } = data;
       await registerMutation.mutateAsync(userData);
-      
+
       // Wait a brief moment before showing the toast
       setTimeout(() => {
         toast({
           title: "Security information saved",
-          description: "Be sure to remember your security question, answer, and PIN for account recovery.",
+          description:
+            "Be sure to remember your security question, answer, and PIN for account recovery.",
           variant: "default",
         });
       }, 100);
-      
     } catch (error) {
       toast({
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "An error occurred during registration",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred during registration",
         variant: "destructive",
       });
     }
@@ -263,7 +293,12 @@ export default function AuthPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center">
               {recoveryStep > 1 && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 mr-2" onClick={() => setRecoveryStep(recoveryStep - 1)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 mr-2"
+                  onClick={() => setRecoveryStep(recoveryStep - 1)}
+                >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               )}
@@ -273,18 +308,21 @@ export default function AuthPage() {
               {recoveryStep === 3 && "Reset Password"}
             </DialogTitle>
             <DialogDescription>
-              {recoveryStep === 1 && "Enter your username to start the recovery process."}
-              {recoveryStep === 2 && "Answer your security question to verify your identity."}
-              {recoveryStep === 3 && "Enter your 4-digit recovery PIN and choose a new password."}
+              {recoveryStep === 1 &&
+                "Enter your username to start the recovery process."}
+              {recoveryStep === 2 &&
+                "Answer your security question to verify your identity."}
+              {recoveryStep === 3 &&
+                "Enter your 4-digit recovery PIN and choose a new password."}
             </DialogDescription>
           </DialogHeader>
-          
+
           {errorMsg && (
             <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm p-3 rounded-md mb-4">
               {errorMsg}
             </div>
           )}
-          
+
           {recoveryStep === 1 && (
             <div className="space-y-4 py-2">
               <div className="space-y-2">
@@ -296,15 +334,19 @@ export default function AuthPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
+                <Button variant="outline" onClick={cancelRecovery}>
+                  Cancel
+                </Button>
                 <Button onClick={checkUsername} disabled={recoveryLoading}>
-                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {recoveryLoading && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
                   Continue
                 </Button>
               </div>
             </div>
           )}
-          
+
           {recoveryStep === 2 && (
             <div className="space-y-4 py-2">
               <div className="space-y-2">
@@ -322,19 +364,28 @@ export default function AuthPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
-                <Button onClick={verifySecurityAnswer} disabled={recoveryLoading}>
-                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                <Button variant="outline" onClick={cancelRecovery}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={verifySecurityAnswer}
+                  disabled={recoveryLoading}
+                >
+                  {recoveryLoading && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
                   Verify
                 </Button>
               </div>
             </div>
           )}
-          
+
           {recoveryStep === 3 && (
             <div className="space-y-4 py-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Recovery PIN (4 digits)</label>
+                <label className="text-sm font-medium">
+                  Recovery PIN (4 digits)
+                </label>
                 <Input
                   value={recoveryPin}
                   onChange={(e) => setRecoveryPin(e.target.value)}
@@ -352,7 +403,9 @@ export default function AuthPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Confirm New Password</label>
+                <label className="text-sm font-medium">
+                  Confirm New Password
+                </label>
                 <Input
                   type="password"
                   value={confirmNewPassword}
@@ -361,9 +414,13 @@ export default function AuthPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={cancelRecovery}>Cancel</Button>
+                <Button variant="outline" onClick={cancelRecovery}>
+                  Cancel
+                </Button>
                 <Button onClick={resetPassword} disabled={recoveryLoading}>
-                  {recoveryLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {recoveryLoading && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
                   Reset Password
                 </Button>
               </div>
@@ -371,16 +428,22 @@ export default function AuthPage() {
           )}
         </DialogContent>
       </Dialog>
-    
+
       {/* Auth Form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center p-8">
         <div className="max-w-md mx-auto w-full">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold mb-2">VibeTimer</h2>
-            <p className="text-gray-500 dark:text-gray-400">Track your activities and optimize your time</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              Track your activities and optimize your time
+            </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
@@ -388,7 +451,10 @@ export default function AuthPage() {
 
             <TabsContent value="login">
               <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                <form
+                  onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={loginForm.control}
                     name="username"
@@ -396,7 +462,11 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="username" {...field} />
+                          <Input
+                            autoComplete="username"
+                            placeholder="username"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -410,13 +480,18 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
+                          <Input
+                            type="password"
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={loginForm.control}
                     name="stayLoggedIn"
@@ -445,10 +520,10 @@ export default function AuthPage() {
                     ) : null}
                     Login
                   </Button>
-                  
+
                   <div className="text-center mt-4">
-                    <Button 
-                      variant="link" 
+                    <Button
+                      variant="link"
                       type="button"
                       onClick={startRecovery}
                       className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
@@ -462,7 +537,10 @@ export default function AuthPage() {
 
             <TabsContent value="register">
               <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                <form
+                  onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={registerForm.control}
                     name="username"
@@ -484,7 +562,11 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Create a password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Create a password"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -498,7 +580,11 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Confirm your password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Confirm your password"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -512,7 +598,10 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Security Question</FormLabel>
                         <FormControl>
-                          <Input placeholder="Example: What was your first pet's name?" {...field} />
+                          <Input
+                            placeholder="Example: What was your first pet's name?"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -540,9 +629,9 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Recovery PIN (4 digits)</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Set a 4-digit PIN" 
-                            {...field} 
+                          <Input
+                            placeholder="Set a 4-digit PIN"
+                            {...field}
                             maxLength={4}
                             inputMode="numeric"
                             pattern="[0-9]*"
@@ -576,19 +665,32 @@ export default function AuthPage() {
           <div className="flex items-center justify-center mb-6 text-blue-500">
             <TimerOff className="h-16 w-16" />
           </div>
-          <h1 className="text-4xl font-bold mb-6 text-center dark:text-white">Welcome to VibeTimer</h1>
+          <h1 className="text-4xl font-bold mb-6 text-center dark:text-white">
+            Welcome to VibeTimer
+          </h1>
           <div className="space-y-6 text-gray-600 dark:text-gray-300">
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-              <h3 className="font-medium mb-1">Track your habits and routines</h3>
-              <p className="text-sm">Create custom timers for each of your daily activities and track elapsed time since last completed.</p>
+              <h3 className="font-medium mb-1">
+                Track your habits and routines
+              </h3>
+              <p className="text-sm">
+                Create custom timers for each of your daily activities and track
+                elapsed time since last completed.
+              </p>
             </div>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
               <h3 className="font-medium mb-1">Visualize your progress</h3>
-              <p className="text-sm">See charts and statistics about your activity patterns over time.</p>
+              <p className="text-sm">
+                See charts and statistics about your activity patterns over
+                time.
+              </p>
             </div>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
               <h3 className="font-medium mb-1">Stay on track</h3>
-              <p className="text-sm">Set minimum and target times for your activities to maintain healthy routines.</p>
+              <p className="text-sm">
+                Set minimum and target times for your activities to maintain
+                healthy routines.
+              </p>
             </div>
           </div>
         </div>
