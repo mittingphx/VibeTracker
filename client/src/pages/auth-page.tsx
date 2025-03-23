@@ -667,7 +667,7 @@ export default function AuthPage() {
       <div className="hidden md:block md:w-1/2 bg-gray-100 dark:bg-gray-900 p-12 flex flex-col justify-center">
         <div className="max-w-md mx-auto">
           <div className="flex flex-col items-center justify-center mb-6">
-            <img src="/images/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="h-24 w-24 mb-4" />
+            <img src="/VibeTracker_logo_transparent.png" alt="VibeTracker Logo" className="h-24 w-24 mb-4" />
             <h1 className="text-4xl font-bold text-center dark:text-white">
               Welcome to VibeTracker
             </h1>
