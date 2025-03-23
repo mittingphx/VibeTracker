@@ -6,6 +6,14 @@
 
 A dynamic time tracking mobile application designed to transform productivity management into an engaging, visually compelling experience. The app combines intuitive design with powerful analytics to help users understand and optimize their time usage.
 
+# Replit
+
+I created this project to learn how to use Replit to develop software without writing code.  I am very impressed with what I've been able to do wothout touching the code. I am goong to use a mix of this eith my Cursor account in the future when I dont need this level of power, but I expect to use this a lot.  
+
+If you want to try it, help me out by clicking this affiliate link. 
+[https://replit.com/refer/gmitting2]
+
+
 
 ## Quick Start
 
