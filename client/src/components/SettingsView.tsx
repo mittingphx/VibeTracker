@@ -10,7 +10,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatTimeDuration } from "@/utils/timeUtils";
 import { getThemePreference, applyTheme } from "@/lib/themeUtils";
-import { Trash, RefreshCcw, Archive, Download, Upload, Github, Info, User, LogIn, LogOut } from "lucide-react";
+import { Trash, RefreshCcw, Archive, Download, Upload, Github, Info, User, LogIn, LogOut, X } from "lucide-react";
 import { Timer } from "@shared/schema";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -460,10 +460,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   return (
     <div className={`${isMobile ? 'fixed inset-0 z-50 pt-16 pb-16' : 'fixed inset-0 bg-gray-600/20 dark:bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
       <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} bg-white dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700`}>
-        <header className="pt-12 pb-2 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold dark:text-white">Settings</h2>
-          <Button variant="ghost" className="text-blue-500" onClick={onClose}>
-            Done
+        <header className="py-4 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold dark:text-white">Settings</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <X className="h-5 w-5" />
           </Button>
         </header>
         
