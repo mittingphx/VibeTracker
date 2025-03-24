@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CalendarIcon, BarChart, BarChart2, TrendingUp, Clock } from "lucide-react";
+import { CalendarIcon, BarChart, BarChart2, TrendingUp, Clock, X } from "lucide-react";
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
@@ -169,8 +169,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
               Work in Progress
             </span>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            Close
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <X className="h-5 w-5" />
           </Button>
         </div>
         

@@ -33,15 +33,10 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
         ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} 
         py-4 border-b flex justify-between items-center px-4
       `}>
-        <div className="w-8">
-          {isMobile && (
-            <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8">
-              <X className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
         <h2 className="text-xl font-bold">About VibeTracker</h2>
-        <div className="w-8"></div>
+        <Button variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8">
+          <X className="h-5 w-5" />
+        </Button>
       </header>
       
       <div className="flex-1 overflow-auto p-6 space-y-6">
