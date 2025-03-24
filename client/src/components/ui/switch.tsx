@@ -1,8 +1,8 @@
-import * as React from "react"
-import * as SwitchPrimitives from "@radix-ui/react-switch"
+import * as React from "react";
+import * as SwitchPrimitives from "@radix-ui/react-switch";
 
-import { cn } from "@/lib/utils"
-import { getThemePreference } from "@/lib/themeUtils"
+import { cn } from "@/lib/utils";
+import { getThemePreference } from "@/lib/themeUtils";
 
 // Switch with customized styling for role="switch" buttons
 const Switch = React.forwardRef<
@@ -10,7 +10,7 @@ const Switch = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => {
   const isDarkMode = getThemePreference();
-  
+
   return (
     <SwitchPrimitives.Root
       role="switch"
@@ -19,23 +19,24 @@ const Switch = React.forwardRef<
         // Light mode styling
         !isDarkMode && [
           "data-[state=checked]:bg-primary",
-          "data-[state=unchecked]:bg-muted data-[state=unchecked]:border-muted-foreground"
+          "data-[state=unchecked]:bg-[rgba(0,0,0,0.8)] data-[state=unchecked]:border-[rgba(0,0,0,1)]",
         ],
         // Dark mode styling - translucent white for both states
-        isDarkMode && "bg-[rgba(255,255,255,0.2)] border-[rgba(255,255,255,0.4)]",
-        className
+        isDarkMode &&
+          "bg-[rgba(255,255,255,0.2)] border-[rgba(255,255,255,0.4)]",
+        className,
       )}
       {...props}
       ref={ref}
     >
       <SwitchPrimitives.Thumb
         className={cn(
-          "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0"
+          "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
         )}
       />
     </SwitchPrimitives.Root>
   );
-})
-Switch.displayName = SwitchPrimitives.Root.displayName
+});
+Switch.displayName = SwitchPrimitives.Root.displayName;
 
-export { Switch }
+export { Switch };
