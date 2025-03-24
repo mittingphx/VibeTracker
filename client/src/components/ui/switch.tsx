@@ -16,9 +16,12 @@ const Switch = React.forwardRef<
       role="switch"
       className={cn(
         "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
-        // In light mode, use default styles
-        !isDarkMode && "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
-        // In dark mode, use translucent white style for both checked and unchecked
+        // Light mode styling
+        !isDarkMode && [
+          "data-[state=checked]:bg-primary",
+          "data-[state=unchecked]:bg-muted data-[state=unchecked]:border-muted-foreground"
+        ],
+        // Dark mode styling - translucent white for both states
         isDarkMode && "bg-[rgba(255,255,255,0.2)] border-[rgba(255,255,255,0.4)]",
         className
       )}
