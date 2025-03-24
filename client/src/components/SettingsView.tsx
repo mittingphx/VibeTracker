@@ -528,10 +528,10 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                   
                   {/* Expanded settings for editing */}
                   {expandedTimerId === timer.id && (
-                    <div className="p-4 bg-gray-50">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800">
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor={`min-time-${timer.id}`} className="block text-sm font-medium mb-1">
+                          <Label htmlFor={`min-time-${timer.id}`} className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">
                             Minimum Time
                           </Label>
                           <div className="flex space-x-2">
@@ -560,7 +560,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                         </div>
                         
                         <div>
-                          <Label htmlFor={`max-time-${timer.id}`} className="block text-sm font-medium mb-1">
+                          <Label htmlFor={`max-time-${timer.id}`} className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">
                             Target Time (leave 0 for none)
                           </Label>
                           <div className="flex space-x-2">
@@ -594,13 +594,13 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                             checked={editPlaySound}
                             onCheckedChange={setEditPlaySound}
                           />
-                          <Label htmlFor={`sound-alert-${timer.id}`}>
+                          <Label htmlFor={`sound-alert-${timer.id}`} className="text-gray-900 dark:text-gray-100">
                             Play sound when minimum time is reached
                           </Label>
                         </div>
                         
                         <div>
-                          <Label className="block text-sm font-medium mb-2">
+                          <Label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                             Display Type
                           </Label>
                           <div className="flex items-center gap-4">
@@ -612,7 +612,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                                 checked={editDisplayType === 'bar'}
                                 onChange={() => setEditDisplayType('bar')}
                               />
-                              <Label htmlFor={`display-bar-${timer.id}`}>
+                              <Label htmlFor={`display-bar-${timer.id}`} className="text-gray-900 dark:text-gray-100">
                                 Bar
                               </Label>
                             </div>
@@ -624,7 +624,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                                 checked={editDisplayType === 'wheel'}
                                 onChange={() => setEditDisplayType('wheel')}
                               />
-                              <Label htmlFor={`display-wheel-${timer.id}`}>
+                              <Label htmlFor={`display-wheel-${timer.id}`} className="text-gray-900 dark:text-gray-100">
                                 Progress Wheel
                               </Label>
                             </div>
@@ -632,7 +632,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                         </div>
                         
                         <div>
-                          <Label htmlFor={`category-${timer.id}`} className="block text-sm font-medium mb-1">
+                          <Label htmlFor={`category-${timer.id}`} className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">
                             Category (optional)
                           </Label>
                           <Input
