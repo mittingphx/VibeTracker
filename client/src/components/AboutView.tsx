@@ -23,7 +23,7 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
   };
   
   return (
-    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-4 pb-4' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
+    <div className={`${isMobile ? 'fixed inset-0 z-50 pt-16 pb-16' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
       <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}>
         <header className="py-4 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold">About VibeTracker</h2>
