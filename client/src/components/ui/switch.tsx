@@ -18,13 +18,13 @@ const Switch = React.forwardRef<
         "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
         // Light mode styling
         !isDarkMode && [
-          "data-[state=checked]:bg-[rgba(0,100,0,0.8)]",
-          "data-[state=unchecked]:bg-[rgba(100,0,0,0.5)] data-[state=unchecked]:border-[rgba(0,0,0,0.8)]",
+          "data-[state=checked]:bg-[rgba(0,150,0,0.7)] data-[state=checked]:border-[rgba(0,150,0,1)]",
+          "data-[state=unchecked]:bg-[rgba(155,50,50,0.7)] data-[state=unchecked]:border-[rgba(155,0,0,0.5)]",
         ],
         // Dark mode styling - translucent white for both states
         isDarkMode && [
-          "data-[state=checked]:bg-[rgba(0,100,0,0.8)]",
-          "data-[state=unchecked]:bg-[rgba(100,0,0,0.5)] data-[state=unchecked]:border-[rgba(0,0,0,0.8)]",
+          "data-[state=checked]:bg-[rgba(0,255,0,0.2)]",
+          "data-[state=unchecked]:bg-[rgba(255,100,100,0.5)] data-[state=unhecked]:border-[rgba(0,0,0,1)]",
         ],
         className,
       )}

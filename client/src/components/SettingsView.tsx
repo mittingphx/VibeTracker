@@ -498,38 +498,12 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           Category: {timer.category}
                         </div>
                       )}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Minimum Time</span>
-                        <span className="text-sm font-medium">
-                          {formatTimeDuration(timer.minTime, true)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Target Time</span>
-                        <span className="text-sm font-medium">
-                          {timer.maxTime ? formatTimeDuration(timer.maxTime, true) : "None"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Sound Alert</span>
-                        <Switch
-                          checked={timer.playSound}
-                          onCheckedChange={(checked) => handleToggleSoundAlert(timer.id, checked)}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Display Type</span>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-xs ${timer.displayType === 'bar' ? 'font-bold' : ''}`}>Bar</span>
-                          <Switch
-                            checked={timer.displayType === 'wheel'}
-                            onCheckedChange={(checked) => {
-                              const newDisplayType = checked ? 'wheel' : 'bar';
-                              handleToggleDisplayType(timer.id, newDisplayType);
-                            }}
-                          />
-                          <span className={`text-xs ${timer.displayType === 'wheel' ? 'font-bold' : ''}`}>Wheel</span>
-                        </div>
+                      {/* Display settings as a summary string */}
+                      <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        Min: {formatTimeDuration(timer.minTime, true)} • 
+                        Target: {timer.maxTime ? formatTimeDuration(timer.maxTime, true) : "None"} • 
+                        Display: {timer.displayType === 'wheel' ? 'Wheel' : 'Bar'} • 
+                        Alert: {timer.playSound ? 'On' : 'Off'}
                       </div>
                       <div className="flex gap-2 mt-2">
                         <Button 
