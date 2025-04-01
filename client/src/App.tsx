@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { useEffect } from "react";
 import { initializeTheme } from "@/lib/themeUtils";
+import VerifyEmailPage from "@/components/VerifyEmailPage";
 
 function Router() {
   // Initialize theme when app starts
@@ -20,6 +21,7 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={Home} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/verify-email" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );

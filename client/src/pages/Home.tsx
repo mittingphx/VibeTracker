@@ -7,6 +7,7 @@ import AboutView from "@/components/AboutView";
 import NewTimerModal from "@/components/NewTimerModal";
 import TimerHistoryView from "@/components/TimerHistoryView";
 import SecuritySetupDialog from "@/components/SecuritySetupDialog";
+import EmailVerificationPrompt from "@/components/EmailVerificationPrompt";
 import { useTimers } from "@/hooks/useTimers";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
@@ -29,6 +30,9 @@ export default function Home() {
   
   // Security setup dialog state
   const [showSecuritySetup, setShowSecuritySetup] = useState(false);
+  
+  // Email verification prompt state
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
 
   // Handle errors during data loading - using useEffect to avoid infinite renders
   useEffect(() => {
@@ -55,6 +59,16 @@ export default function Home() {
       setShowSecuritySetup(true);
     }
   }, [user]);
+  
+  // Check if user needs email verification
+  useEffect(() => {
+    if (user && !user.emailVerified && !showSecuritySetup) {
+      // First priority is security setup, then email verification
+      // Don't show email prompt immediately if security setup is needed
+      // We'll show it after security setup is complete
+      setShowEmailVerification(true);
+    }
+  }, [user, showSecuritySetup]);
   
   // Only show new timer dialog for users with no timers on first login
   // Use localStorage to track if user has ever had timers before
@@ -210,6 +224,13 @@ export default function Home() {
               description: "Your account recovery options have been successfully configured.",
             });
           }}
+        />
+      )}
+
+      {/* Email Verification Prompt */}
+      {user && showEmailVerification && !showSecuritySetup && (
+        <EmailVerificationPrompt
+          onSkip={() => setShowEmailVerification(false)}
         />
       )}
     </div>
