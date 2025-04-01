@@ -10,6 +10,7 @@ import { formatTimeDuration } from "@/utils/timeUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { playSound } from "@/lib/soundEffects";
 import { useTimerHistory } from "@/hooks/useTimerHistory";
 import { getThemePreference } from "@/lib/themeUtils";
@@ -65,18 +66,27 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
     }
   };
 
-  // Use the timer history hook to manage undo/redo functionality
+  // Get the user for their day start hour preference
+  const { user } = useAuth();
+  
+  // Use the timer history hook to manage undo/redo functionality and press counts
   const { 
     canUndo, 
     canRedo, 
     isUndoing, 
     isRedoing, 
     handleUndo: onHistoryUndo,
-    handleRedo: onHistoryRedo
+    handleRedo: onHistoryRedo,
+    countPressesToday,
+    countPressesSinceTime
   } = useTimerHistory({ 
     timerId: timer.id,
-    enabled: true
+    enabled: true,
+    dayStartHour: user?.dayStartHour || 0
   });
+  
+  // Get the number of times this timer has been pressed today
+  const todayPressCount = countPressesToday();
 
   const handleTimerPress = async () => {
     // For timers with no previous presses, allow the first press regardless of canPress status
@@ -221,6 +231,13 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
               {timer.lastPressed 
                 ? `Last: ${formatDistanceToNow(timer.lastPressed, { addSuffix: true })}` 
                 : "No records yet"}
+            </p>
+            
+            {/* Today's press count */}
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              {todayPressCount > 0 
+                ? `Today: ${todayPressCount} ${todayPressCount === 1 ? 'press' : 'presses'}` 
+                : "No presses today"}
             </p>
           </div>
           

@@ -469,6 +469,36 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Set or update day start hour preference
+  app.post("/api/user/day-start-hour", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { dayStartHour } = req.body;
+      if (dayStartHour === undefined || dayStartHour < 0 || dayStartHour > 23) {
+        return res.status(400).json({ message: "Day start hour must be between 0 and 23" });
+      }
+
+      // Update the user's day start hour preference
+      const updatedUser = await storage.updateUser(req.user.id, {
+        dayStartHour
+      });
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update day start hour" });
+      }
+
+      // Return the updated user without sensitive information
+      const { password, securityAnswer, recoveryPin, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      console.error("Day start hour update error:", error);
+      res.status(500).json({ message: "Day start hour update failed" });
+    }
+  });
+
   // Debug endpoint to check session status
   app.get("/api/debug/session", (req: Request, res: Response) => {
     console.log("Debug session info:");

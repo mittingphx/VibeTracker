@@ -66,12 +66,13 @@ const getBestUnit = (seconds: number): TimeUnit => {
 export default function SettingsView({ onClose, highlightedTimerId }: SettingsViewProps) {
   const { timers, isLoading } = useTimers();
   const { toast } = useToast();
-  const { user, logoutMutation } = useAuth();
+  const { user, logoutMutation, updateUserMutation } = useAuth();
   const [darkMode, setDarkMode] = useState(getThemePreference);
   const [notifications, setNotifications] = useState(true);
   const [keepScreenAwake, setKeepScreenAwake] = useState(false);
   const [expandedTimerId, setExpandedTimerId] = useState<number | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [dayStartHour, setDayStartHour] = useState<number>(user?.dayStartHour || 0);
   
   // Credits section state
   const [expandedCredits, setExpandedCredits] = useState(false);
@@ -98,6 +99,13 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
     // Apply theme using the utility function
     applyTheme(darkMode);
   }, [darkMode]);
+  
+  // Update dayStartHour when user changes
+  useEffect(() => {
+    if (user?.dayStartHour !== undefined) {
+      setDayStartHour(user.dayStartHour);
+    }
+  }, [user?.dayStartHour]);
 
   // Load archived timers when Settings view opens
   useEffect(() => {
@@ -854,6 +862,42 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                   onCheckedChange={setKeepScreenAwake}
                 />
               </div>
+
+              {/* Day Start Hour Setting */}
+              {user && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-col space-y-2">
+                    <span className="dark:text-white font-medium">Day Start Time</span>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Set when your "day" starts for counting daily press statistics
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <Select
+                        value={dayStartHour.toString()}
+                        onValueChange={(value) => {
+                          const hour = parseInt(value);
+                          setDayStartHour(hour);
+                          updateUserMutation.mutate({ dayStartHour: hour });
+                        }}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select a time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={i.toString()}>
+                              {i === 0 ? '12:00 AM (Midnight)' : 
+                               i < 12 ? `${i}:00 AM` : 
+                               i === 12 ? '12:00 PM (Noon)' : 
+                               `${i - 12}:00 PM`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

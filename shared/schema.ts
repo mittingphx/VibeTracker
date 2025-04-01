@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   securityQuestion: text("security_question"),
   securityAnswer: text("security_answer"),
   recoveryPin: text("recovery_pin"),
+  dayStartHour: integer("day_start_hour").default(0), // Hour (0-23) when a new day starts, default is midnight (0)
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

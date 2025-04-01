@@ -2,13 +2,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import { TimerHistory } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface UseTimerHistoryOptions {
   timerId: number;
   enabled?: boolean;
+  dayStartHour?: number;
 }
 
-export function useTimerHistory({ timerId, enabled = true }: UseTimerHistoryOptions) {
+export function useTimerHistory({ timerId, enabled = true, dayStartHour = 0 }: UseTimerHistoryOptions) {
   // Fetch timer history for a specific timer
   const {
     data: history = [],
@@ -75,6 +77,44 @@ export function useTimerHistory({ timerId, enabled = true }: UseTimerHistoryOpti
     }
   };
 
+  // Count presses for today (since the user-configured day start)
+  const countPressesToday = (): number => {
+    const now = new Date();
+    const today = new Date();
+    
+    // Set to the day start hour for today
+    today.setHours(dayStartHour, 0, 0, 0);
+    
+    // If current time is before the day start hour, use yesterday's day start
+    if (now < today) {
+      today.setDate(today.getDate() - 1);
+    }
+
+    return history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate >= today && entry.isActive;
+    }).length;
+  };
+
+  // Count active presses since a specific time of day
+  const countPressesSinceTime = (hours: number, minutes: number = 0): number => {
+    const now = new Date();
+    const referenceTime = new Date();
+    
+    // Set to the specified time on the current day
+    referenceTime.setHours(hours, minutes, 0, 0);
+    
+    // If the reference time is in the future, use the previous day
+    if (referenceTime > now) {
+      referenceTime.setDate(referenceTime.getDate() - 1);
+    }
+    
+    return history.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate >= referenceTime && entry.isActive;
+    }).length;
+  };
+
   return {
     history,
     latestHistoryEntry,
@@ -88,6 +128,8 @@ export function useTimerHistory({ timerId, enabled = true }: UseTimerHistoryOpti
     undoPress,
     redoPress,
     handleUndo,
-    handleRedo
+    handleRedo,
+    countPressesToday,
+    countPressesSinceTime
   };
 }

@@ -8,6 +8,10 @@ import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+type UpdateUserData = {
+  dayStartHour?: number;
+};
+
 type AuthContextType = {
   user: SelectUser | null;
   isLoading: boolean;
@@ -15,6 +19,7 @@ type AuthContextType = {
   loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  updateUserMutation: UseMutationResult<SelectUser, Error, UpdateUserData>;
 };
 
 type LoginData = Pick<InsertUser, "username" | "password"> & { stayLoggedIn?: boolean };
@@ -93,6 +98,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
   });
+  
+  const updateUserMutation = useMutation({
+    mutationFn: async (userData: UpdateUserData) => {
+      if (userData.dayStartHour !== undefined) {
+        const res = await apiRequest("POST", "/api/user/day-start-hour", { dayStartHour: userData.dayStartHour });
+        return await res.json();
+      }
+      throw new Error("No valid user data to update");
+    },
+    onSuccess: (updatedUser: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], updatedUser);
+      toast({
+        title: "Settings Updated",
+        description: "Your preferences have been saved",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <AuthContext.Provider
@@ -103,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
+        updateUserMutation,
       }}
     >
       {children}
