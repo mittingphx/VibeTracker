@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { generateVerificationToken, sendVerificationEmail } from "./email";
 
 declare global {
   namespace Express {
@@ -337,6 +338,137 @@ export function setupAuth(app: Express) {
     }
   });
   
+  // Add email to account and send verification email
+  app.post("/api/user/email", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Check if email is already in use by another user
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser && existingUser.id !== req.user.id) {
+        return res.status(400).json({ message: "Email is already in use" });
+      }
+
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+
+      // Update user with email and verification token
+      const updatedUser = await storage.updateUserEmail(req.user.id, email, verificationToken);
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update email" });
+      }
+
+      // Send verification email
+      const emailSent = await sendVerificationEmail(email, updatedUser.username, verificationToken);
+
+      if (!emailSent) {
+        console.error("Error sending verification email");
+        // We still return success even if email sending fails
+        // The user can request a new verification email later
+      }
+
+      // Return the updated user without sensitive information
+      const { password, securityAnswer, recoveryPin, verificationToken: token, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      console.error("Email update error:", error);
+      res.status(500).json({ message: "Email update failed" });
+    }
+  });
+
+  // Verify email with token
+  app.get("/api/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "Verification token is required" });
+      }
+
+      const user = await storage.getUserByVerificationToken(token);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Invalid or expired verification token" });
+      }
+
+      // Mark the email as verified
+      const updatedUser = await storage.verifyUserEmail(user.id);
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to verify email" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Email verified successfully",
+        username: updatedUser.username 
+      });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Email verification failed" });
+    }
+  });
+
+  // Request new verification email
+  app.post("/api/resend-verification", async (req: Request, res: Response) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = req.user as SelectUser;
+      
+      if (!user.email) {
+        return res.status(400).json({ message: "No email address associated with this account" });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+
+      // Generate a new verification token
+      const verificationToken = generateVerificationToken();
+
+      // Update user with new verification token
+      const updatedUser = await storage.updateUser(user.id, {
+        verificationToken
+      });
+
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update verification token" });
+      }
+
+      // Send verification email
+      const emailSent = await sendVerificationEmail(user.email, user.username, verificationToken);
+
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send verification email" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Verification email sent" 
+      });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      res.status(500).json({ message: "Failed to resend verification email" });
+    }
+  });
+
   // Debug endpoint to check session status
   app.get("/api/debug/session", (req: Request, res: Response) => {
     console.log("Debug session info:");

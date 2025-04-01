@@ -15,8 +15,12 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined>;
+  updateUserEmail(id: number, email: string, verificationToken: string): Promise<User | undefined>;
+  verifyUserEmail(id: number): Promise<User | undefined>;
 
   // Timer operations
   getTimers(includeArchived?: boolean): Promise<Timer[]>;
@@ -104,6 +108,18 @@ export class MemStorage implements IStorage {
       (user) => user.username === username,
     );
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+  
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.verificationToken === token,
+    );
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
@@ -112,10 +128,42 @@ export class MemStorage implements IStorage {
       id,
       securityQuestion: insertUser.securityQuestion || null,
       securityAnswer: insertUser.securityAnswer || null,
-      recoveryPin: insertUser.recoveryPin || null
+      recoveryPin: insertUser.recoveryPin || null,
+      email: insertUser.email || null,
+      emailVerified: false,
+      verificationToken: null
     };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUserEmail(id: number, email: string, verificationToken: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = {
+      ...user,
+      email,
+      verificationToken,
+      emailVerified: false
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  async verifyUserEmail(id: number): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = {
+      ...user,
+      emailVerified: true,
+      verificationToken: null
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 
   async updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined> {
@@ -228,6 +276,7 @@ export class MemStorage implements IStorage {
       isEnabled: insertTimer.isEnabled ?? true,
       playSound: insertTimer.playSound ?? true,
       color: insertTimer.color ?? "#007AFF",
+      displayType: insertTimer.displayType ?? "bar",
       createdAt: now,
       isArchived: insertTimer.isArchived ?? false
     };
@@ -466,9 +515,44 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.verificationToken, token));
+    return user;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+  
+  async updateUserEmail(id: number, email: string, verificationToken: string): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set({ 
+        email, 
+        verificationToken, 
+        emailVerified: false 
+      })
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
+  }
+  
+  async verifyUserEmail(id: number): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set({ 
+        emailVerified: true,
+        verificationToken: null 
+      })
+      .where(eq(users.id, id))
+      .returning();
+    
+    return updatedUser;
   }
 
   async updateUser(id: number, userData: Partial<Omit<User, 'id'>>): Promise<User | undefined> {

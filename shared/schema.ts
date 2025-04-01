@@ -7,6 +7,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
+  emailVerified: boolean("email_verified").default(false),
+  verificationToken: text("verification_token"),
   securityQuestion: text("security_question"),
   securityAnswer: text("security_answer"),
   recoveryPin: text("recovery_pin"),
@@ -15,6 +18,7 @@ export const users = pgTable("users", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
   securityQuestion: true,
   securityAnswer: true,
   recoveryPin: true,
