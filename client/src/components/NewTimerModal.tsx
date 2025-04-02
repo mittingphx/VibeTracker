@@ -46,6 +46,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   const [maxTimeUnit, setMaxTimeUnit] = useState<TimeUnit>("hours");
   const [playSound, setPlaySound] = useState(true);
   const [displayType, setDisplayType] = useState<"bar" | "wheel">("wheel");
+  const [showTotalSeconds, setShowTotalSeconds] = useState(false);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -94,6 +95,7 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
         playSound,
         color: "#007AFF", // iOS blue default
         displayType, // Add display type to the timer data
+        showTotalSeconds, // Add option to show total seconds count
       };
 
       console.log("Submitting timer with data:", timerData);
@@ -268,6 +270,18 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
             />
             <Label htmlFor="sound-alert" className="text-sm font-medium">
               Play sound when minimum time is reached
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="show-seconds" 
+              checked={showTotalSeconds}
+              onCheckedChange={(checked) => setShowTotalSeconds(checked === true)}
+              className="border-2 border-gray-400 data-[state=checked]:border-white data-[state=checked]:bg-white dark:data-[state=checked]:ring-2 dark:data-[state=checked]:ring-white dark:data-[state=checked]:ring-offset-2"
+            />
+            <Label htmlFor="show-seconds" className="text-sm font-medium">
+              Show total seconds count
             </Label>
           </div>
         </div>

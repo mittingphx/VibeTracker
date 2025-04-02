@@ -220,11 +220,14 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
             <p className={`text-3xl font-bold ${timeTextColor} mt-1`}>
               {formatTimeDuration(timer.elapsedTime)}
             </p>
-            <p className={`text-sm ${timeTextColor} -mt-1`}>
-              {timer.elapsedTime < 60 
-                ? `${timer.elapsedTime} ${timer.elapsedTime === 1 ? 'second' : 'seconds'}`
-                : `${timer.elapsedTime.toLocaleString()} seconds total`}
-            </p>
+            {/* Only show total seconds display when enabled in timer settings */}
+            {timer.showTotalSeconds && (
+              <p className={`text-sm ${timeTextColor} -mt-1`}>
+                {timer.elapsedTime < 60 
+                  ? `${timer.elapsedTime} ${timer.elapsedTime === 1 ? 'second' : 'seconds'}`
+                  : `${timer.elapsedTime.toLocaleString()} seconds total`}
+              </p>
+            )}
             
             {/* Last Clicked Date */}
             <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>

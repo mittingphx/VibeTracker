@@ -92,6 +92,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   const [editMaxTimeUnit, setEditMaxTimeUnit] = useState<TimeUnit>("hours");
   const [editPlaySound, setEditPlaySound] = useState(true);
   const [editDisplayType, setEditDisplayType] = useState<"bar" | "wheel">("bar");
+  const [editShowTotalSeconds, setEditShowTotalSeconds] = useState(false);
   const [editCategory, setEditCategory] = useState("");
   
   // Apply dark mode when component mounts or darkMode changes
@@ -103,7 +104,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   // Update dayStartHour when user changes
   useEffect(() => {
     if (user?.dayStartHour !== undefined) {
-      setDayStartHour(user.dayStartHour);
+      setDayStartHour(user.dayStartHour || 0);
     }
   }, [user?.dayStartHour]);
 
@@ -234,6 +235,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
       
       setEditPlaySound(timer.playSound);
       setEditDisplayType(timer.displayType === "wheel" ? "wheel" : "bar");
+      setEditShowTotalSeconds(timer.showTotalSeconds || false);
       setEditCategory(timer.category || "");
     }
   };
@@ -258,6 +260,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
         maxTime: maxTimeSeconds,
         playSound: editPlaySound,
         displayType: editDisplayType,
+        showTotalSeconds: editShowTotalSeconds,
         category: editCategory || null
       });
       
@@ -514,7 +517,8 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                           Min: {formatTimeDuration(timer.minTime, true)} • 
                           Target: {timer.maxTime ? formatTimeDuration(timer.maxTime, true) : "None"} • 
                           Display: {timer.displayType === 'wheel' ? 'Wheel' : 'Bar'} • 
-                          Alert: {timer.playSound ? 'On' : 'Off'}
+                          Alert: {timer.playSound ? 'On' : 'Off'} •
+                          Seconds: {timer.showTotalSeconds ? 'Shown' : 'Hidden'}
                         </div>
                         <div className="flex gap-2 mt-2">
                           <Button 
@@ -607,6 +611,17 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
                             />
                             <Label htmlFor={`sound-alert-${timer.id}`} className="text-gray-900 dark:text-gray-100">
                               Play sound when minimum time is reached
+                            </Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Switch 
+                              id={`show-seconds-${timer.id}`}
+                              checked={editShowTotalSeconds}
+                              onCheckedChange={setEditShowTotalSeconds}
+                            />
+                            <Label htmlFor={`show-seconds-${timer.id}`} className="text-gray-900 dark:text-gray-100">
+                              Show total seconds count
                             </Label>
                           </div>
                           

@@ -37,6 +37,7 @@ export const timers = pgTable("timers", {
   playSound: boolean("play_sound").notNull().default(true),
   color: text("color").notNull().default("#007AFF"), // iOS blue default
   displayType: text("display_type").notNull().default("bar"), // "bar" or "wheel"
+  showTotalSeconds: boolean("show_total_seconds").notNull().default(false), // Whether to show total seconds count
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isArchived: boolean("is_archived").notNull().default(false), // Whether timer is archived
 });
