@@ -11,3 +11,11 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Mobile popup positioning class that aligns to top of screen and leaves space for navbar */
+  .mobile-popup-position {
+    @apply fixed inset-x-0 top-0 bottom-14 z-50 !mt-0 overflow-auto;
+    height: calc(100vh - 3.5rem); /* Account for navbar height */
+  }
+}
