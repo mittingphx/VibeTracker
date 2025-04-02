@@ -157,7 +157,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
     <div className={`${isMobile ? 'mobile-popup-position' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
       <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
         {/* Fixed Header - Always visible */}
-        <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'bg-blue-900/50 border-gray-700' : 'bg-blue-100 border-gray-200'}`}>
           <div className="flex items-center gap-2">
             <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Charts</h1>
             <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded ${isDarkMode ? 'bg-blue-900/30 text-blue-200 border border-blue-800' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>

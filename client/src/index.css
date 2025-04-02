@@ -15,8 +15,7 @@
 @layer components {
   /* Mobile popup positioning class that aligns to top of screen and leaves space for navbar */
   .mobile-popup-position {
-    @apply fixed inset-x-0 top-0 z-50 !mt-0 overflow-auto;
-    height: calc(100vh - 4rem); /* Account for navbar height (64px) */
+    @apply fixed inset-x-0 top-0 bottom-0 z-50 !mt-0 overflow-auto;
     padding-bottom: 4rem; /* Add padding at the bottom to ensure content is visible above navbar */
   }
 }
