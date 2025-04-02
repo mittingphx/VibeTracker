@@ -11,7 +11,7 @@ export default function TabBar({ activeTab, onTabChange }: TabBarProps) {
   const isDarkMode = getThemePreference();
   
   return (
-    <nav className={`sticky bottom-0 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t flex justify-around items-center h-16 px-1`}>
+    <nav className={`fixed bottom-0 left-0 right-0 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t flex justify-around items-center h-16 px-1 z-50`}>
       <button 
         className={`flex flex-col items-center justify-center w-14 ${
           activeTab === "timers" 

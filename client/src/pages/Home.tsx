@@ -118,7 +118,7 @@ export default function Home() {
   const isDarkMode = getThemePreference();
   
   return (
-    <div className={`max-w-md mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'} min-h-screen flex flex-col`}>
+    <div className={`max-w-md mx-auto ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'} min-h-screen flex flex-col pb-16`}>
       {/* Header */}
       <header className={`sticky top-0 z-10 ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-200'} pt-3 pb-2 px-4 flex justify-between items-center border-b`}>
         <div className="flex items-center gap-2">
