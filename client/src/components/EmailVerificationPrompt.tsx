@@ -63,20 +63,20 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               Email Verification Required
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600 dark:text-gray-300">
               Verifying your email address enhances security and enables features like password recovery.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             {user?.email ? (
-              <div className="text-sm space-y-2">
+              <div className="text-sm space-y-2 text-gray-700 dark:text-gray-200">
                 <p>
                   Your email address <span className="font-medium">{user.email}</span> is not verified.
                 </p>
@@ -85,7 +85,7 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
                 </p>
               </div>
             ) : (
-              <div className="text-sm space-y-2">
+              <div className="text-sm space-y-2 text-gray-700 dark:text-gray-200">
                 <p>
                   You haven't provided an email address yet. Adding an email is important for account security.
                 </p>

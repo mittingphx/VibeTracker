@@ -98,10 +98,10 @@ export default function EmailVerificationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[450px]">
+      <DialogContent className="max-w-[450px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>Email Verification</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-gray-900 dark:text-white">Email Verification</DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-300">
             {emailVerified
               ? "Your email has been verified. You can update it if needed."
               : currentEmail
@@ -113,7 +113,7 @@ export default function EmailVerificationDialog({
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 Email Address
               </label>
               <Input
