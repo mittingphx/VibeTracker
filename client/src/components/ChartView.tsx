@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CalendarIcon, BarChart, BarChart2, TrendingUp, Clock, X } from "lucide-react";
+import { CalendarIcon, Calendar, CalendarDays, BarChart, BarChart2, TrendingUp, Clock, X } from "lucide-react";
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
@@ -18,15 +18,16 @@ import {
   VictoryLegend,
   VictoryTooltip,
 } from "victory";
-import { format, subDays, startOfDay, startOfWeek, endOfWeek, subWeeks, parseISO } from "date-fns";
+import { format, subDays, startOfDay, startOfWeek, endOfWeek, subWeeks, subMonths, startOfMonth, endOfMonth, parseISO } from "date-fns";
 
 interface ChartViewProps {
   onClose: () => void;
 }
 
 type ChartMode = "today" | "compare";
-type ChartPeriod = "daily" | "weekly";
+type ChartPeriod = "daily" | "weekly" | "monthly";
 type ChartType = "count" | "average" | "events";
+type TimelinePeriod = "daily" | "weekly" | "monthly";
 
 export default function ChartView({ onClose }: ChartViewProps) {
   const isMobile = useIsMobile();
@@ -76,23 +77,28 @@ export default function ChartView({ onClose }: ChartViewProps) {
   // Calculate date ranges based on chart mode and period
   const currentDate = startOfDay(new Date());
   
-  // Today or this week
-  const currentStart = chartPeriod === "daily" 
-    ? currentDate 
-    : startOfWeek(currentDate, { weekStartsOn: 1 });  // Monday
+  // Get start and end dates based on period
+  let currentStart, currentEnd, comparisonStart, comparisonEnd;
   
-  const currentEnd = chartPeriod === "daily"
-    ? new Date(currentDate.getTime() + 24 * 60 * 60 * 1000 - 1)  // End of today
-    : endOfWeek(currentDate, { weekStartsOn: 1 });  // Sunday
-  
-  // Yesterday or last week
-  const comparisonStart = chartPeriod === "daily"
-    ? startOfDay(subDays(currentDate, 1))  // Yesterday
-    : startOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Monday
-  
-  const comparisonEnd = chartPeriod === "daily"
-    ? new Date(comparisonStart.getTime() + 24 * 60 * 60 * 1000 - 1)  // End of yesterday
-    : endOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Sunday
+  if (chartPeriod === "daily") {
+    // Daily view: today vs yesterday
+    currentStart = currentDate;
+    currentEnd = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000 - 1);  // End of today
+    comparisonStart = startOfDay(subDays(currentDate, 1));  // Yesterday
+    comparisonEnd = new Date(comparisonStart.getTime() + 24 * 60 * 60 * 1000 - 1);  // End of yesterday
+  } else if (chartPeriod === "weekly") {
+    // Weekly view: this week vs last week
+    currentStart = startOfWeek(currentDate, { weekStartsOn: 1 });  // Monday
+    currentEnd = endOfWeek(currentDate, { weekStartsOn: 1 });  // Sunday
+    comparisonStart = startOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Monday
+    comparisonEnd = endOfWeek(subWeeks(currentDate, 1), { weekStartsOn: 1 });  // Last week Sunday
+  } else {
+    // Monthly view: this month vs last month
+    currentStart = startOfMonth(currentDate);
+    currentEnd = endOfMonth(currentDate);
+    comparisonStart = startOfMonth(subMonths(currentDate, 1));
+    comparisonEnd = endOfMonth(subMonths(currentDate, 1));
+  }
 
   // Fetch chart data based on selected period
   const { currentPeriodData, comparisonPeriodData, averageTimeBetweenPresses, pressEvents, isLoading, error } = useCharts({
@@ -224,7 +230,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           )}
           
-          {/* Chart Period Selector */}
+          {/* Chart Period Selector for Count and Average */}
           {(chartType === "count" || chartType === "average") && (
             <div className="px-4 mb-4 flex">
               <Button
@@ -250,6 +256,60 @@ export default function ChartView({ onClose }: ChartViewProps) {
               >
                 <BarChart2 className="h-4 w-4 mr-2" />
                 Weekly
+              </Button>
+              <Button
+                variant="ghost"
+                className={`px-2 ${
+                  chartPeriod === "monthly" 
+                    ? "text-blue-500 border-b-2 border-blue-500" 
+                    : isDarkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+                onClick={() => setChartPeriod("monthly")}
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Monthly
+              </Button>
+            </div>
+          )}
+          
+          {/* Timeline Period Selector */}
+          {chartType === "events" && (
+            <div className="px-4 mb-4 flex">
+              <Button
+                variant="ghost"
+                className={`px-2 ${
+                  chartPeriod === "daily" 
+                    ? "text-blue-500 border-b-2 border-blue-500" 
+                    : isDarkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+                onClick={() => setChartPeriod("daily")}
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Daily
+              </Button>
+              <Button
+                variant="ghost"
+                className={`px-2 ${
+                  chartPeriod === "weekly" 
+                    ? "text-blue-500 border-b-2 border-blue-500" 
+                    : isDarkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+                onClick={() => setChartPeriod("weekly")}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Weekly
+              </Button>
+              <Button
+                variant="ghost"
+                className={`px-2 ${
+                  chartPeriod === "monthly" 
+                    ? "text-blue-500 border-b-2 border-blue-500" 
+                    : isDarkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+                onClick={() => setChartPeriod("monthly")}
+              >
+                <CalendarDays className="h-4 w-4 mr-2" />
+                Monthly
               </Button>
             </div>
           )}
@@ -447,7 +507,13 @@ export default function ChartView({ onClose }: ChartViewProps) {
                       <VictoryAxis
                         tickFormat={(x) => {
                           const date = new Date(x);
-                          return format(date, "MM/dd HH:mm");
+                          if (chartPeriod === "daily") {
+                            return format(date, "HH:mm"); // Hours and minutes only for daily view
+                          } else if (chartPeriod === "weekly") {
+                            return format(date, "MM/dd HH:mm"); // Date and time for weekly view
+                          } else {
+                            return format(date, "MM/dd"); // Just the date for monthly view (avoid crowding)
+                          }
                         }}
                         label="Date and Time"
                         style={{

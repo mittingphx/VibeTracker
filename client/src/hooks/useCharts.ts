@@ -24,7 +24,7 @@ interface PressEventChartDataPoint {
 }
 
 interface UseChartsOptions {
-  period: "daily" | "weekly";
+  period: "daily" | "weekly" | "monthly";
   currentStart: Date;
   currentEnd: Date;
   comparisonStart: Date;
@@ -111,9 +111,14 @@ export function useCharts({
     filteredHistory.forEach(entry => {
       const date = new Date(entry.timestamp);
       // Format based on period
-      const timeKey = period === "daily" 
-        ? `${date.getHours()}:00` 
-        : date.toLocaleDateString("en-US", { weekday: "short" });
+      let timeKey;
+      if (period === "daily") {
+        timeKey = `${date.getHours()}:00`;
+      } else if (period === "weekly") {
+        timeKey = date.toLocaleDateString("en-US", { weekday: "short" });
+      } else { // monthly
+        timeKey = format(date, "dd"); // Day of month
+      }
       
       // Initialize group if it doesn't exist
       if (!groupedData[timeKey]) {
