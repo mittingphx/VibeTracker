@@ -64,7 +64,7 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <DialogHeader className="bg-amber-100 dark:bg-amber-900/40 -m-6 mb-2 p-6 border-b border-gray-200 dark:border-gray-700">
+          <DialogHeader className="bg-amber-200 dark:bg-amber-900/80 -m-6 mb-2 p-6 border-b border-gray-200 dark:border-gray-700">
             <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               Email Verification Required

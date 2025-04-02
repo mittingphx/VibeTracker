@@ -473,7 +473,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   return (
     <div className={`${isMobile ? 'mobile-popup-position' : 'fixed inset-0 bg-gray-600/20 dark:bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
       <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} bg-white dark:bg-gray-900 overflow-hidden border border-gray-200 dark:border-gray-700`}>
-        <header className="py-4 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-purple-100 dark:bg-purple-900/40">
+        <header className="py-4 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-purple-200 dark:bg-purple-900/80">
           <h2 className="text-xl font-bold dark:text-white">Settings</h2>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="h-5 w-5" />

@@ -99,7 +99,7 @@ export default function EmailVerificationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[450px] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <DialogHeader className="bg-amber-100 dark:bg-amber-900/40 -m-6 mb-2 p-6 border-b border-gray-200 dark:border-gray-700">
+        <DialogHeader className="bg-amber-200 dark:bg-amber-900/80 -m-6 mb-2 p-6 border-b border-gray-200 dark:border-gray-700">
           <DialogTitle className="text-gray-900 dark:text-white">Email Verification</DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-300">
             {emailVerified

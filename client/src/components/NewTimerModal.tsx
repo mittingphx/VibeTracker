@@ -140,8 +140,8 @@ export default function NewTimerModal({ open, onClose }: NewTimerModalProps) {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">New Timer</DialogTitle>
+        <DialogHeader className="bg-blue-200 dark:bg-blue-900/80 -m-6 mb-2 p-6 border-b border-gray-200 dark:border-gray-700">
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">New Timer</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-2">
