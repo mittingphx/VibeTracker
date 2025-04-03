@@ -6,6 +6,15 @@
 
 A dynamic time tracking mobile application designed to transform productivity management into an engaging, visually compelling experience. The app combines intuitive design with powerful analytics to help users understand and optimize their time usage.
 
+# Screenshots
+<p align="center" style="overflow-x: scroll">
+    <img  src="IMG_8806.jpeg" alt="VibeTracker screenshot 1" width="400" />
+    <img  src="IMG_8807.jpeg" alt="VibeTracker screenshot 2" width="400" />
+    <img  src="IMG_8808.jpeg" alt="VibeTracker screensbot 3" width="400" />
+  <img  src="IMG_8809.jpeg" alt="VibeTracker screenshot 4" width="400" />
+</p>
+
+
 # Replit
 
 I created this project to learn how to use Replit to develop software without writing code.  I am very impressed with what I've been able to do wothout touching the code. I am goong to use a mix of this eith my Cursor account in the future when I dont need this level of power, but I expect to use this a lot.  
