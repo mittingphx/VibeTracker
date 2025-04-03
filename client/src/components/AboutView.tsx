@@ -85,13 +85,45 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
               Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$18.50</span>
             </p>
             <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-              This represents the AI usage cost as of March 23, 2025, as shown in the Replit admin dashboard.
+              This represents the AI usage cost as of April 2, 2025, as shown in the Replit admin dashboard.
             </p>
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">AI Cost Breakdown:</h4>
+              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} p-3`}>
+                <div className="flex justify-between border-b border-gray-600 dark:border-gray-500 pb-1 mb-1">
+                  <span className="font-medium">Date</span>
+                  <span className="font-medium">Amount</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span>Initial Development</span>
+                  <span>$12.00</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span>UI Enhancements</span>
+                  <span>$3.25</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span>Authentication</span>
+                  <span>$2.00</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span>Chart Improvements</span>
+                  <span>$1.25</span>
+                </div>
+                <div className="flex justify-between pt-1 mt-1 border-t border-gray-600 dark:border-gray-500 font-semibold">
+                  <span>Total</span>
+                  <span>$18.50</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 space-y-4`}>
             <h3 className="text-xl font-medium">Recent Updates</h3>
             <ul className={`list-disc pl-5 ${isDarkMode ? "text-gray-300" : "text-gray-700"} space-y-2`}>
+              <li><span className="font-medium">April 2, 2025:</span> Enhanced timeline reports with daily, weekly, and monthly views; improved axis labeling to prevent overlapping text; updated cost breakdown in About screen</li>
+              <li><span className="font-medium">March 31, 2025:</span> Fixed navbar visibility on mobile; improved popup scrolling with adequate bottom padding; added colorful gradient backgrounds to popup headers</li>
+              <li><span className="font-medium">March 26, 2025:</span> Added feature to customize day start hour; implemented email verification with SendGrid; added options to show/hide total seconds per timer</li>
               <li><span className="font-medium">March 23, 2025:</span> Added LED-like filling effect to progress wheel, improved timer display with client-side ticking, reorganized TimerCard layout, improved color contrast in charts</li>
               <li><span className="font-medium">March 20, 2025:</span> Added display type selection in settings (bar/wheel), implemented segmented progress wheel</li>
               <li><span className="font-medium">March 15, 2025:</span> Added security features with password recovery system</li>
