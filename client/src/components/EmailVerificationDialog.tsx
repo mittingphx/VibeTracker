@@ -129,9 +129,53 @@ export default function EmailVerificationDialog({
             </div>
 
             {currentEmail && !emailVerified && (
-              <div className="text-sm text-amber-500 dark:text-amber-400">
-                Your email is not verified. Please check your inbox for the verification link
-                or resend it below.
+              <div className="space-y-2">
+                <div className="text-sm text-amber-500 dark:text-amber-400">
+                  Your email is not verified. Please check your inbox for the verification link
+                  or resend it below.
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                  <p className="mb-1">Having trouble receiving the email? You can:</p>
+                  <ol className="list-decimal list-inside space-y-1 ml-1">
+                    <li>
+                      <button 
+                        type="button"
+                        className="text-blue-600 dark:text-blue-400 hover:underline focus:outline-none"
+                        onClick={() => {
+                          fetch('/api/debug/get-token')
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success) {
+                                // Open the verification URL in a new tab
+                                window.open(data.verificationUrl, '_blank');
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: data.message,
+                                  variant: "destructive",
+                                });
+                              }
+                            })
+                            .catch(err => {
+                              toast({
+                                title: "Error",
+                                description: "Failed to get verification link",
+                                variant: "destructive",
+                              });
+                            });
+                        }}
+                      >
+                        Get direct verification link
+                      </button>
+                    </li>
+                    <li>
+                      Or use this URL format:
+                      <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded text-xs block overflow-x-auto mt-1">
+                        {window.location.origin}/api/verify-email?token=[verification-token]
+                      </code>
+                    </li>
+                  </ol>
+                </div>
               </div>
             )}
           </div>

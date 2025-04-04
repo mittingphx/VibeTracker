@@ -4,8 +4,32 @@ import { randomBytes } from 'crypto';
 // Initialize SendGrid with API key
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('SendGrid API key is configured. Email functionality is enabled.');
+  // Log a masked version of the API key for debugging
+  const maskedKey = process.env.SENDGRID_API_KEY.substring(0, 4) + '...' + 
+                    process.env.SENDGRID_API_KEY.substring(process.env.SENDGRID_API_KEY.length - 4);
+  console.log('SendGrid API key (masked):', maskedKey);
 } else {
-  console.warn('SendGrid API key not found! Email functionality will not work.');
+  console.error('SendGrid API key not set. Email functionality will be disabled.');
+}
+
+// Log environment variables (without exposing secrets)
+console.log('Environment variables for email:');
+console.log('- APP_URL:', process.env.APP_URL || 'Not set');
+console.log('- EMAIL_FROM:', process.env.EMAIL_FROM || 'Not set');
+
+// Set environment variables manually if they're not set
+if (!process.env.APP_URL) {
+  process.env.APP_URL = 'https://vibetracker.replit.app';
+  console.log('Setting APP_URL to:', process.env.APP_URL);
+}
+
+// For SendGrid, we need to use a verified sender identity
+// Make sure this email is verified in your SendGrid account
+if (!process.env.EMAIL_FROM) {
+  // Set this to an email that's verified in your SendGrid account
+  process.env.EMAIL_FROM = 'noreply@vibetracker.app';  
+  console.log('Setting EMAIL_FROM to:', process.env.EMAIL_FROM);
 }
 
 interface SendEmailParams {
@@ -22,19 +46,30 @@ export async function sendEmail({ to, subject, text, html }: SendEmailParams): P
       return false;
     }
 
+    const fromEmail = process.env.EMAIL_FROM || 'noreply@vibetracker.app';
+    console.log(`Sending email from: ${fromEmail} to: ${to}`);
+
     const msg = {
       to,
-      from: process.env.EMAIL_FROM || 'noreply@vibetracker.app',
+      from: fromEmail,
       subject,
       text,
       html,
     };
 
-    await sgMail.send(msg);
-    console.log(`Email sent to ${to}`);
-    return true;
+    try {
+      await sgMail.send(msg);
+      console.log(`Email successfully sent to ${to}`);
+      return true;
+    } catch (sendgridError: any) {
+      console.error('SendGrid API Error:', sendgridError);
+      if (sendgridError.response) {
+        console.error('SendGrid API Error Details:', sendgridError.response.body);
+      }
+      return false;
+    }
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error preparing email:', error);
     return false;
   }
 }
@@ -44,7 +79,9 @@ export function generateVerificationToken(): string {
 }
 
 export async function sendVerificationEmail(email: string, username: string, token: string): Promise<boolean> {
-  const verificationLink = `${process.env.APP_URL || 'https://vibetracker.replit.app'}/verify-email?token=${token}`;
+  // Use the API endpoint for verification, not a frontend route
+  const verificationLink = `${process.env.APP_URL || 'https://vibetracker.replit.app'}/api/verify-email?token=${token}`;
+  console.log(`Generated verification link: ${verificationLink}`);
   
   const subject = 'Verify your VibeTracker email';
   const text = `Hi ${username},\n\nPlease verify your email by clicking the following link: ${verificationLink}\n\nIf you didn't sign up for VibeTracker, you can ignore this email.\n\nThanks,\nThe VibeTracker Team`;

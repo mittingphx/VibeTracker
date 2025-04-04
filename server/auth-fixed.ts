@@ -396,22 +396,39 @@ export function setupAuth(app: Express) {
       const { token } = req.query;
       
       if (!token || typeof token !== 'string') {
+        console.error("Missing verification token");
         return res.status(400).json({ message: "Verification token is required" });
       }
 
+      console.log(`Processing verification token: ${token.substring(0, 10)}...`);
+      
       const user = await storage.getUserByVerificationToken(token);
       
       if (!user) {
+        console.error(`No user found with verification token starting with: ${token.substring(0, 10)}...`);
         return res.status(404).json({ message: "Invalid or expired verification token" });
       }
 
+      console.log(`Found user: ${user.username} with ID: ${user.id}`);
+      
       // Mark the email as verified
       const updatedUser = await storage.verifyUserEmail(user.id);
 
       if (!updatedUser) {
+        console.error(`Failed to verify email for user ID: ${user.id}`);
         return res.status(500).json({ message: "Failed to verify email" });
       }
 
+      console.log(`Successfully verified email for user: ${updatedUser.username}`);
+
+      // Check if the request prefers HTML response (browser)
+      const acceptHeader = req.headers.accept || '';
+      if (acceptHeader.includes('text/html')) {
+        // Redirect to a success page for browser clients
+        return res.redirect('/#email-verified');
+      }
+      
+      // Return JSON for API clients
       res.json({ 
         success: true, 
         message: "Email verified successfully",
@@ -512,5 +529,71 @@ export function setupAuth(app: Express) {
       user: req.isAuthenticated() ? req.user?.username : null,
       hasCookie: !!req.headers.cookie
     });
+  });
+
+  // Debug endpoint to test email sending
+  app.get("/api/debug/test-email", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.query;
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email parameter is required" });
+      }
+
+      const testToken = generateVerificationToken();
+      console.log(`Testing email verification with token: ${testToken.substring(0, 10)}...`);
+      
+      const sent = await sendVerificationEmail(email, "TestUser", testToken);
+      
+      if (sent) {
+        res.json({ 
+          success: true, 
+          message: "Test verification email sent successfully",
+          email
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to send test verification email" 
+        });
+      }
+    } catch (error) {
+      console.error("Test email error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error sending test email",
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  // For testing purposes only - get the verification token for a user
+  // This should be removed in production
+  app.get("/api/debug/get-token", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+    
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      
+      if (!user.verificationToken) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "No verification token found for this user. Try updating your email to generate one."
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        token: user.verificationToken,
+        verificationUrl: `${process.env.APP_URL || req.protocol + '://' + req.get('host')}/api/verify-email?token=${user.verificationToken}`
+      });
+    } catch (error) {
+      console.error("Error getting verification token:", error);
+      res.status(500).json({ success: false, message: "Failed to get verification token" });
+    }
   });
 }
