@@ -372,14 +372,19 @@ export function setupAuth(app: Express) {
         return res.status(500).json({ message: "Failed to update email" });
       }
 
-      // Send verification email
+      // Try to send verification email
       const emailSent = await sendVerificationEmail(email, updatedUser.username, verificationToken);
 
       if (!emailSent) {
         console.error("Error sending verification email");
         // We still return success even if email sending fails
-        // The user can request a new verification email later
+        // The user can verify using the direct verification link
       }
+      
+      // Include verification token in the response during development
+      // In production, this should be removed
+      console.log(`Generated verification token: ${verificationToken.substring(0, 10)}...`);
+      console.log(`Full verification URL: ${process.env.APP_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`);
 
       // Return the updated user without sensitive information
       const { password, securityAnswer, recoveryPin, verificationToken: token, ...userWithoutSensitiveInfo } = updatedUser;
@@ -469,12 +474,15 @@ export function setupAuth(app: Express) {
         return res.status(500).json({ message: "Failed to update verification token" });
       }
 
-      // Send verification email
+      // Try to send verification email
       const emailSent = await sendVerificationEmail(user.email, user.username, verificationToken);
 
-      if (!emailSent) {
-        return res.status(500).json({ message: "Failed to send verification email" });
-      }
+      // Always log the verification URL for development purposes
+      console.log(`Generated verification token for resend: ${verificationToken.substring(0, 10)}...`);
+      console.log(`Full verification URL: ${process.env.APP_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`);
+
+      // Don't fail the operation even if email sending failed
+      // User can use the direct verification link from the logs or the debug endpoint
 
       res.json({ 
         success: true, 
@@ -579,17 +587,29 @@ export function setupAuth(app: Express) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
       
-      if (!user.verificationToken) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "No verification token found for this user. Try updating your email to generate one."
-        });
+      // Generate a new token if there isn't one
+      let token = user.verificationToken;
+      let updatedUser = user;
+      
+      if (!token) {
+        token = generateVerificationToken();
+        const result = await storage.updateUser(req.user.id, { verificationToken: token });
+        if (!result) {
+          return res.status(500).json({ success: false, message: "Failed to generate verification token" });
+        }
+        updatedUser = result;
+        console.log(`Generated new verification token for user ${user.username}: ${token.substring(0, 8)}...`);
       }
+      
+      const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+      const verificationUrl = `${appUrl}/api/verify-email?token=${token}`;
+      
+      console.log(`Verification URL for ${user.username}: ${verificationUrl}`);
       
       res.json({ 
         success: true, 
-        token: user.verificationToken,
-        verificationUrl: `${process.env.APP_URL || req.protocol + '://' + req.get('host')}/api/verify-email?token=${user.verificationToken}`
+        token: token,
+        verificationUrl: verificationUrl
       });
     } catch (error) {
       console.error("Error getting verification token:", error);

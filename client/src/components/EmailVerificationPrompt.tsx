@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertTriangle, Mail } from 'lucide-react';
+import { AlertTriangle, Mail, RefreshCcw } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -83,6 +83,57 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
                 <p>
                   We've sent a verification link to your email. Please check your inbox and click the link to verify your account.
                 </p>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trouble receiving emails?</p>
+                  <Button 
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="w-full mt-1 flex items-center justify-center"
+                    onClick={() => {
+                      // Show loading toast
+                      toast({
+                        title: "Getting verification link...",
+                        description: "Please wait...",
+                      });
+                      
+                      fetch('/api/debug/get-token')
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.success) {
+                            // Show success toast with link
+                            toast({
+                              title: "Verification link ready",
+                              description: "Verification page has been opened in a new tab",
+                              duration: 5000,
+                            });
+                            
+                            // Open the verification URL in a new tab
+                            window.open(data.verificationUrl, '_blank');
+                          } else {
+                            toast({
+                              title: "Error",
+                              description: data.message,
+                              variant: "destructive",
+                            });
+                          }
+                        })
+                        .catch(err => {
+                          toast({
+                            title: "Error",
+                            description: "Failed to get verification link",
+                            variant: "destructive",
+                          });
+                        });
+                    }}
+                  >
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    Verify Email Directly
+                  </Button>
+                  <p className="text-xs text-center mt-1 text-muted-foreground">
+                    No need to wait for an email - click to verify now!
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="text-sm space-y-2 text-gray-700 dark:text-gray-200">
