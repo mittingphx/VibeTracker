@@ -426,11 +426,79 @@ export function setupAuth(app: Express) {
 
       console.log(`Successfully verified email for user: ${updatedUser.username}`);
 
-      // Check if the request prefers HTML response (browser)
+      // For browser clients, send a proper HTML response
       const acceptHeader = req.headers.accept || '';
       if (acceptHeader.includes('text/html')) {
-        // Redirect to a success page for browser clients
-        return res.redirect('/#email-verified');
+        // Return a nice HTML page with a redirect after a short delay
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Email Verified Successfully</title>
+            <meta http-equiv="refresh" content="3;url=/" />
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background-color: #f7f7f7;
+                color: #333;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                padding: 20px;
+                text-align: center;
+              }
+              .card {
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+                max-width: 500px;
+                width: 100%;
+              }
+              h1 {
+                color: #4CAF50;
+                margin-top: 0;
+              }
+              .success-icon {
+                font-size: 64px;
+                color: #4CAF50;
+                margin-bottom: 20px;
+              }
+              p {
+                margin: 10px 0;
+                line-height: 1.5;
+              }
+              .redirect-text {
+                font-size: 14px;
+                color: #666;
+                margin-top: 20px;
+              }
+              .manual-link {
+                display: inline-block;
+                margin-top: 15px;
+                color: #2196F3;
+                text-decoration: none;
+              }
+              .manual-link:hover {
+                text-decoration: underline;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="success-icon">✓</div>
+              <h1>Email Verified Successfully</h1>
+              <p>Thank you for verifying your email address!</p>
+              <p>Your account is now fully activated and you have access to all features.</p>
+              <p class="redirect-text">You will be redirected to the homepage in a few seconds...</p>
+              <a href="/" class="manual-link">Click here if you're not redirected automatically</a>
+            </div>
+          </body>
+          </html>
+        `);
       }
       
       // Return JSON for API clients
