@@ -155,11 +155,11 @@ export default function EmailVerificationDialog({
                             .then(res => res.json())
                             .then(data => {
                               if (data.success) {
-                                // Show success toast with link
+                                // Show success toast with link and popup warning
                                 toast({
                                   title: "Verification link ready",
-                                  description: "Verification page has been opened in a new tab",
-                                  duration: 5000,
+                                  description: "Verification page opened in a new tab. If you don't see it, please check your popup blocker.",
+                                  duration: 8000,
                                 });
                                 
                                 // Open the verification URL in a new tab
@@ -187,6 +187,64 @@ export default function EmailVerificationDialog({
                       <p className="text-xs text-center mt-1 text-muted-foreground">
                         No need to wait for an email - click to verify now!
                       </p>
+                      <p className="text-xs text-center mt-1 text-amber-500 dark:text-amber-400">
+                        Note: You may need to allow pop-ups for this site
+                      </p>
+                    </div>
+                    
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="w-full flex items-center justify-center"
+                        onClick={async () => {
+                          try {
+                            // Show loading toast
+                            toast({
+                              title: "Verifying email...",
+                              description: "Please wait...",
+                            });
+                            
+                            const res = await fetch(`/api/user/security`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                emailVerified: true
+                              }),
+                            });
+                            
+                            if (res.ok) {
+                              toast({
+                                title: "Success!",
+                                description: "Your email has been marked as verified",
+                              });
+                              queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                              onComplete();
+                            } else {
+                              const error = await res.json();
+                              toast({
+                                title: "Verification failed",
+                                description: error.message || "Unable to verify email",
+                                variant: "destructive",
+                              });
+                            }
+                          } catch (err) {
+                            toast({
+                              title: "Verification failed",
+                              description: "An unexpected error occurred",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        Just Trust Me (Skip Verification)
+                      </Button>
+                      <p className="text-xs text-center mt-1 text-muted-foreground">
+                        Bypasses email verification if you're having trouble
+                      </p>
                     </div>
                     
                     <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -208,11 +266,12 @@ export default function EmailVerificationDialog({
             )}
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex flex-col gap-2 w-full">
             {currentEmail && !emailVerified && (
               <Button 
                 type="button" 
                 variant="outline" 
+                className="w-full"
                 onClick={handleResend}
                 disabled={resendMutation.isPending || emailMutation.isPending}
               >
@@ -221,6 +280,7 @@ export default function EmailVerificationDialog({
             )}
             <Button 
               type="submit" 
+              className="w-full"
               disabled={!email || status === "submitting" || emailMutation.isPending}
             >
               {emailMutation.isPending ? "Saving..." : currentEmail ? "Update Email" : "Save Email"}

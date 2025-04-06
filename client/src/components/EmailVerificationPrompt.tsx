@@ -8,6 +8,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import EmailVerificationDialog from './EmailVerificationDialog';
+import { Separator } from '@/components/ui/separator';
 
 interface EmailVerificationPromptProps {
   onSkip: () => void;
@@ -101,11 +102,11 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
                         .then(res => res.json())
                         .then(data => {
                           if (data.success) {
-                            // Show success toast with link
+                            // Show success toast with link and popup warning
                             toast({
                               title: "Verification link ready",
-                              description: "Verification page has been opened in a new tab",
-                              duration: 5000,
+                              description: "Verification page opened in a new tab. If you don't see it, please check your popup blocker.",
+                              duration: 8000,
                             });
                             
                             // Open the verification URL in a new tab
@@ -133,6 +134,9 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
                   <p className="text-xs text-center mt-1 text-muted-foreground">
                     No need to wait for an email - click to verify now!
                   </p>
+                  <p className="text-xs text-center mt-1 text-amber-500 dark:text-amber-400">
+                    Note: You may need to allow pop-ups for this site
+                  </p>
                 </div>
               </div>
             ) : (
@@ -144,26 +148,80 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
             )}
           </div>
 
-          <DialogFooter className="gap-2 flex-col sm:flex-row sm:justify-between">
-            <Button variant="ghost" onClick={handleSkip}>
-              Skip for now
-            </Button>
-            <div className="flex gap-2">
+          <DialogFooter className="gap-2 flex-col">
+            <div className="flex gap-2 flex-col w-full">
               {user?.email ? (
                 <Button 
                   onClick={handleResend} 
                   disabled={resendMutation.isPending}
+                  className="w-full"
                 >
                   {resendMutation.isPending ? "Sending..." : "Resend verification email"}
                 </Button>
               ) : (
                 <Button 
                   onClick={handleSetupEmail}
+                  className="w-full"
                 >
                   <Mail className="mr-2 h-4 w-4" /> Set up email address
                 </Button>
               )}
+              
+              {user?.email && !user?.emailVerified && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={async () => {
+                    try {
+                      // Show loading toast
+                      toast({
+                        title: "Verifying email...",
+                        description: "Please wait...",
+                      });
+                      
+                      const res = await fetch(`/api/user/security`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          emailVerified: true
+                        }),
+                      });
+                      
+                      if (res.ok) {
+                        toast({
+                          title: "Success!",
+                          description: "Your email has been marked as verified",
+                        });
+                        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                        setOpen(false);
+                        onSkip();
+                      } else {
+                        const error = await res.json();
+                        toast({
+                          title: "Verification failed",
+                          description: error.message || "Unable to verify email",
+                          variant: "destructive",
+                        });
+                      }
+                    } catch (err) {
+                      toast({
+                        title: "Verification failed",
+                        description: "An unexpected error occurred",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Just Trust Me (Skip Verification)
+                </Button>
+              )}
             </div>
+            
+            <Button variant="ghost" onClick={handleSkip} className="w-full mt-2">
+              Skip for now
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
