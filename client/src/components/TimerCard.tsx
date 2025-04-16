@@ -383,12 +383,12 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent className="p-2 max-w-[230px] text-center">
+                  <TooltipContent className="p-2 max-w-[260px] text-center">
                     {!timer.isEnabled 
                       ? "Timer is disabled. Enable it in settings."
                       : !timer.canPress 
                         ? (timer.lastPressed 
-                            ? `Must wait ${formatTimeDuration(timer.minTime)} before next press.`
+                            ? `Must wait ${formatTimeDuration(timer.minTime)} before next press. Tip: You can manually add presses by going to View History and using Quick Add.`
                             : `First press is ready! Click to start tracking.`)
                         : isUpdating
                           ? "Processing..." 

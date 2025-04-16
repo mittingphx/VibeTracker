@@ -46,6 +46,7 @@ export default function TimerHistoryView({ timerId, timerName, onClose }: TimerH
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   
   const formatOptions = [
+    { label: "Now", minutes: 0 },
     { label: "5 minutes ago", minutes: 5 },
     { label: "15 minutes ago", minutes: 15 },
     { label: "30 minutes ago", minutes: 30 },
