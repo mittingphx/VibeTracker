@@ -353,11 +353,50 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
   };
   
   // Export timer data to JSON file
-  const handleExportData = () => {
+  const handleExportData = async () => {
+    // Show a loading toast
+    toast({
+      title: "Preparing Export",
+      description: "Gathering timer data and history...",
+    });
+    
+    // Initialize timerHistory object to store history for each timer
+    const timerHistory: Record<number, any[]> = {};
+    
+    // Fetch history for each timer
+    const fetchHistoryPromises = timers.map(async (timer) => {
+      try {
+        const response = await fetch(`/api/timers/${timer.id}/history`);
+        if (response.ok) {
+          const history = await response.json();
+          timerHistory[timer.id] = history;
+        }
+      } catch (error) {
+        console.error(`Failed to fetch history for timer ${timer.id}`, error);
+      }
+    });
+    
+    // Fetch history for archived timers too
+    const fetchArchivedHistoryPromises = archivedTimers.map(async (timer) => {
+      try {
+        const response = await fetch(`/api/timers/${timer.id}/history`);
+        if (response.ok) {
+          const history = await response.json();
+          timerHistory[timer.id] = history;
+        }
+      } catch (error) {
+        console.error(`Failed to fetch history for archived timer ${timer.id}`, error);
+      }
+    });
+    
+    // Wait for all history fetches to complete
+    await Promise.all([...fetchHistoryPromises, ...fetchArchivedHistoryPromises]);
+    
     // Combine active and archived timers for export
     const exportData = {
       timers: timers,
       archivedTimers: archivedTimers,
+      timerHistory: timerHistory,
       exportDate: new Date().toISOString(),
     };
     
@@ -378,7 +417,7 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
     
     toast({
       title: "Export Successful",
-      description: "Timer data has been exported successfully",
+      description: "Timer data and history have been exported successfully",
     });
   };
   
@@ -408,13 +447,22 @@ export default function SettingsView({ onClose, highlightedTimerId }: SettingsVi
             throw new Error("Invalid import data: missing timers array");
           }
           
-          // Confirm import
-          if (window.confirm(`Import ${importData.timers.length} timers? This will replace your current timers.`)) {
+          // Check if it contains history data
+          const hasHistory = importData.timerHistory && typeof importData.timerHistory === 'object';
+          
+          // Confirm import with better description
+          const confirmMessage = hasHistory 
+            ? `Import ${importData.timers.length} timers with their complete history? This will replace your current timers.`
+            : `Import ${importData.timers.length} timers? This will replace your current timers.`;
+            
+          if (window.confirm(confirmMessage)) {
             // TODO: Call API to handle import on server-side
-            // For now, show a toast that this feature is coming soon
+            // For now, show a toast that this feature is coming soon with info about history
             toast({
               title: "Import Functionality",
-              description: "Full import functionality coming soon. Backend API endpoint needs to be implemented.",
+              description: hasHistory 
+                ? "Full import functionality with history data coming soon. Backend API endpoint needs to be implemented."
+                : "Full import functionality coming soon. Backend API endpoint needs to be implemented.",
             });
           }
         } catch (error) {
