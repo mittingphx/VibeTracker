@@ -93,7 +93,17 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
     if (!timer.canPress && timer.lastPressed) {
       toast({
         title: "Minimum time not reached",
-        description: `You need to wait at least ${formatTimeDuration(timer.minTime)}`,
+        description: `You need to wait at least ${formatTimeDuration(timer.minTime)}. You can use View History to add presses manually.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // If timer is disabled, show a message instead of doing nothing
+    if (!timer.isEnabled) {
+      toast({
+        title: "Timer disabled",
+        description: "This timer is currently disabled. Enable it in settings to use it.",
         variant: "destructive",
       });
       return;
@@ -197,9 +207,9 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
     }
   }
 
-  // Allow first-time presses even when canPress is false, but button still disabled if timer is disabled
-  // Using Boolean(timer.lastPressed) to handle Date | null type properly in TypeScript
-  const buttonDisabled = isUpdating || (!timer.canPress && Boolean(timer.lastPressed)) || !timer.isEnabled;
+  // Only disable the button if the timer is updating or if it's explicitly disabled in settings
+  // We'll handle the minimum time warning in the handleTimerPress function
+  const buttonDisabled = isUpdating || !timer.isEnabled;
 
   return (
     <Card className={`mb-4 overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -291,7 +301,7 @@ export default function TimerCard({ timer, onArchive, onViewHistory }: TimerCard
                   <DropdownMenuItem 
                     className="flex items-center cursor-pointer"
                     onClick={handleTimerPress}
-                    disabled={(!timer.canPress && Boolean(timer.lastPressed)) || !timer.isEnabled}
+                    disabled={!timer.isEnabled}
                   >
                     <Clock className="mr-2 h-4 w-4" />
                     <span>Press Timer</span>
