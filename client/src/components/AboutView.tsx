@@ -82,10 +82,10 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
           <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 space-y-4`}>
             <h3 className="text-xl font-medium">Development Cost</h3>
             <p className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
-              Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$18.50</span>
+              Approximate cost paid to Replit for AI: <span className="font-semibold text-blue-500 dark:text-blue-400">$19.00</span>
             </p>
             <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"} mt-1`}>
-              This represents the AI usage cost as of April 2, 2025, as shown in the Replit admin dashboard.
+              This represents the AI usage cost as of April 17, 2025, as shown in the Replit admin dashboard.
             </p>
             <div className="mt-4">
               <h4 className="font-medium mb-2">AI Cost Breakdown:</h4>
@@ -110,9 +110,13 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
                   <span>Chart Improvements</span>
                   <span>$1.25</span>
                 </div>
+                <div className="flex justify-between py-1">
+                  <span>UX Improvements</span>
+                  <span>$0.50</span>
+                </div>
                 <div className="flex justify-between pt-1 mt-1 border-t border-gray-600 dark:border-gray-500 font-semibold">
                   <span>Total</span>
-                  <span>$18.50</span>
+                  <span>$19.00</span>
                 </div>
               </div>
             </div>
@@ -121,13 +125,13 @@ export default function AboutView({ onClose }: AboutViewProps = {}) {
           <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 space-y-4`}>
             <h3 className="text-xl font-medium">Recent Updates</h3>
             <ul className={`list-disc pl-5 ${isDarkMode ? "text-gray-300" : "text-gray-700"} space-y-2`}>
+              <li><span className="font-medium">April 17, 2025:</span> Improved button responsiveness by adding helpful notifications for minimum time limits; added Now option to Quick Add dropdown; enhanced tooltips with guidance on using View History to bypass minimum time limits</li>
+              <li><span className="font-medium">April 7, 2025:</span> Enhanced email verification system with direct verification button and HTML success page; added pop-up blocker warnings and "Just Trust Me" option to expedite verification</li>
               <li><span className="font-medium">April 2, 2025:</span> Enhanced timeline reports with daily, weekly, and monthly views; improved axis labeling to prevent overlapping text; updated cost breakdown in About screen</li>
               <li><span className="font-medium">March 31, 2025:</span> Fixed navbar visibility on mobile; improved popup scrolling with adequate bottom padding; added colorful gradient backgrounds to popup headers</li>
               <li><span className="font-medium">March 26, 2025:</span> Added feature to customize day start hour; implemented email verification with SendGrid; added options to show/hide total seconds per timer</li>
               <li><span className="font-medium">March 23, 2025:</span> Added LED-like filling effect to progress wheel, improved timer display with client-side ticking, reorganized TimerCard layout, improved color contrast in charts</li>
               <li><span className="font-medium">March 20, 2025:</span> Added display type selection in settings (bar/wheel), implemented segmented progress wheel</li>
-              <li><span className="font-medium">March 15, 2025:</span> Added security features with password recovery system</li>
-              <li><span className="font-medium">March 10, 2025:</span> Added multi-user authentication and timer categories</li>
             </ul>
           </div>
 
