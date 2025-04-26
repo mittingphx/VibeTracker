@@ -200,9 +200,26 @@ export default function EmailVerificationDialog({
                         className="w-full flex items-center justify-center"
                         onClick={async () => {
                           try {
+                            // Show dialog for security info
+                            const securityQuestion = prompt("For security, please enter a security question");
+                            if (!securityQuestion) return;
+                            
+                            const securityAnswer = prompt("Please enter the answer to your security question");
+                            if (!securityAnswer) return;
+                            
+                            const recoveryPin = prompt("Please enter a 4-digit recovery PIN (numbers only)");
+                            if (!recoveryPin || !/^\d{4}$/.test(recoveryPin)) {
+                              toast({
+                                title: "Invalid PIN",
+                                description: "Recovery PIN must be 4 digits",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
                             // Show loading toast
                             toast({
-                              title: "Verifying email...",
+                              title: "Setting up security and verifying email...",
                               description: "Please wait...",
                             });
                             
@@ -212,6 +229,9 @@ export default function EmailVerificationDialog({
                                 'Content-Type': 'application/json',
                               },
                               body: JSON.stringify({
+                                securityQuestion,
+                                securityAnswer,
+                                recoveryPin,
                                 emailVerified: true
                               }),
                             });
@@ -219,7 +239,7 @@ export default function EmailVerificationDialog({
                             if (res.ok) {
                               toast({
                                 title: "Success!",
-                                description: "Your email has been marked as verified",
+                                description: "Your email has been marked as verified and security info saved",
                               });
                               queryClient.invalidateQueries({ queryKey: ["/api/user"] });
                               onComplete();
@@ -243,7 +263,7 @@ export default function EmailVerificationDialog({
                         Just Trust Me (Skip Verification)
                       </Button>
                       <p className="text-xs text-center mt-1 text-muted-foreground">
-                        Bypasses email verification if you're having trouble
+                        Bypasses email verification if you're having trouble. You'll need to set up security information.
                       </p>
                     </div>
                     
