@@ -498,7 +498,7 @@ export default function AuthPage() {
                         <FormControl>
                           <Input
                             autoComplete="username"
-                            placeholder="username"
+                            placeholder="Enter your username"
                             {...field}
                           />
                         </FormControl>
@@ -595,7 +595,7 @@ export default function AuthPage() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Choose a username" autoComplete="username" {...field} />
+                          <Input placeholder="Create a username" autoComplete="username" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
