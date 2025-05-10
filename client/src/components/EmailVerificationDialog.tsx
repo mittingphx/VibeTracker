@@ -138,12 +138,12 @@ export default function EmailVerificationDialog({
                 <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
                   <p className="mb-1">Having trouble receiving the email? You can:</p>
                   <div className="space-y-3">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col mb-4">
+                      <p className="text-sm font-medium mb-2">Option 1: Direct Verification</p>
                       <Button 
                         type="button"
-                        size="sm"
                         variant="secondary"
-                        className="w-full mt-2 flex items-center justify-center"
+                        className="w-full flex items-center justify-center"
                         onClick={() => {
                           // Show loading toast
                           toast({
@@ -192,10 +192,10 @@ export default function EmailVerificationDialog({
                       </p>
                     </div>
                     
-                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2">Option 2: Skip Verification</p>
                       <Button
                         type="button"
-                        size="sm"
                         variant="outline"
                         className="w-full flex items-center justify-center"
                         onClick={async () => {
@@ -268,17 +268,20 @@ export default function EmailVerificationDialog({
                     </div>
                     
                     <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        If the direct verification doesn't work, you can:
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        Additional Tips:
                       </p>
-                      <ol className="list-decimal list-inside space-y-1 ml-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <ul className="list-disc list-inside space-y-1 ml-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <li>
                           Try refreshing the page and re-entering your email
                         </li>
                         <li>
-                          Contact support and provide your username
+                          Check your spam folder for verification emails
                         </li>
-                      </ol>
+                        <li>
+                          Contact support if you continue to have issues
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -286,25 +289,27 @@ export default function EmailVerificationDialog({
             )}
           </div>
 
-          <DialogFooter className="flex flex-col gap-2 w-full">
-            {currentEmail && !emailVerified && (
+          <DialogFooter className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row w-full gap-3">
+              {currentEmail && !emailVerified && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleResend}
+                  disabled={resendMutation.isPending || emailMutation.isPending}
+                >
+                  {resendMutation.isPending ? "Sending..." : "Resend Verification"}
+                </Button>
+              )}
               <Button 
-                type="button" 
-                variant="outline" 
+                type="submit" 
                 className="w-full"
-                onClick={handleResend}
-                disabled={resendMutation.isPending || emailMutation.isPending}
+                disabled={!email || status === "submitting" || emailMutation.isPending}
               >
-                {resendMutation.isPending ? "Sending..." : "Resend Verification"}
+                {emailMutation.isPending ? "Saving..." : currentEmail ? "Update Email" : "Save Email"}
               </Button>
-            )}
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={!email || status === "submitting" || emailMutation.isPending}
-            >
-              {emailMutation.isPending ? "Saving..." : currentEmail ? "Update Email" : "Save Email"}
-            </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
