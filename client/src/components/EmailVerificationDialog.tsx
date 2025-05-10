@@ -194,76 +194,86 @@ export default function EmailVerificationDialog({
                     
                     <div className="mb-4">
                       <p className="text-sm font-medium mb-2">Option 2: Skip Verification</p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full flex items-center justify-center"
-                        onClick={async () => {
-                          try {
-                            // Show dialog for security info
-                            const securityQuestion = prompt("For security, please enter a security question");
-                            if (!securityQuestion) return;
-                            
-                            const securityAnswer = prompt("Please enter the answer to your security question");
-                            if (!securityAnswer) return;
-                            
-                            const recoveryPin = prompt("Please enter a 4-digit recovery PIN (numbers only)");
-                            if (!recoveryPin || !/^\d{4}$/.test(recoveryPin)) {
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex items-center justify-center"
+                          onClick={async () => {
+                            try {
+                              // Show dialog for security info
+                              const securityQuestion = prompt("For security, please enter a security question");
+                              if (!securityQuestion) return;
+                              
+                              const securityAnswer = prompt("Please enter the answer to your security question");
+                              if (!securityAnswer) return;
+                              
+                              const recoveryPin = prompt("Please enter a 4-digit recovery PIN (numbers only)");
+                              if (!recoveryPin || !/^\d{4}$/.test(recoveryPin)) {
+                                toast({
+                                  title: "Invalid PIN",
+                                  description: "Recovery PIN must be 4 digits",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              
+                              // Show loading toast
                               toast({
-                                title: "Invalid PIN",
-                                description: "Recovery PIN must be 4 digits",
-                                variant: "destructive",
+                                title: "Setting up security and verifying email...",
+                                description: "Please wait...",
                               });
-                              return;
-                            }
-                            
-                            // Show loading toast
-                            toast({
-                              title: "Setting up security and verifying email...",
-                              description: "Please wait...",
-                            });
-                            
-                            const res = await fetch(`/api/user/security`, {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                securityQuestion,
-                                securityAnswer,
-                                recoveryPin,
-                                emailVerified: true
-                              }),
-                            });
-                            
-                            if (res.ok) {
-                              toast({
-                                title: "Success!",
-                                description: "Your email has been marked as verified and security info saved",
+                              
+                              const res = await fetch(`/api/user/security`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  securityQuestion,
+                                  securityAnswer,
+                                  recoveryPin,
+                                  emailVerified: true
+                                }),
                               });
-                              queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-                              onComplete();
-                            } else {
-                              const error = await res.json();
+                              
+                              if (res.ok) {
+                                toast({
+                                  title: "Success!",
+                                  description: "Your email has been marked as verified and security info saved",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                                onComplete();
+                              } else {
+                                const error = await res.json();
+                                toast({
+                                  title: "Verification failed",
+                                  description: error.message || "Unable to verify email",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (err) {
                               toast({
                                 title: "Verification failed",
-                                description: error.message || "Unable to verify email",
+                                description: "An unexpected error occurred",
                                 variant: "destructive",
                               });
                             }
-                          } catch (err) {
-                            toast({
-                              title: "Verification failed",
-                              description: "An unexpected error occurred",
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                      >
-                        Just Trust Me (Skip Verification)
-                      </Button>
+                          }}
+                        >
+                          Just Trust Me
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="flex items-center justify-center"
+                          onClick={onComplete}
+                        >
+                          Skip For Now
+                        </Button>
+                      </div>
                       <p className="text-xs text-center mt-1 text-muted-foreground">
-                        Bypasses email verification if you're having trouble. You'll need to set up security information.
+                        "Just Trust Me" bypasses verification with security setup. "Skip For Now" closes this dialog.
                       </p>
                     </div>
                     
@@ -290,17 +300,19 @@ export default function EmailVerificationDialog({
           </div>
 
           <DialogFooter className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row w-full gap-3">
+            <div className="flex flex-col w-full gap-3">
               {currentEmail && !emailVerified && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleResend}
-                  disabled={resendMutation.isPending || emailMutation.isPending}
-                >
-                  {resendMutation.isPending ? "Sending..." : "Resend Verification"}
-                </Button>
+                <div className="mx-auto w-full max-w-[280px]">
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    className="w-full"
+                    onClick={handleResend}
+                    disabled={resendMutation.isPending || emailMutation.isPending}
+                  >
+                    {resendMutation.isPending ? "Sending..." : "Resend Verification Email"}
+                  </Button>
+                </div>
               )}
               <Button 
                 type="submit" 
