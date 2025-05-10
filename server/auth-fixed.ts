@@ -306,7 +306,7 @@ export function setupAuth(app: Express) {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const { securityQuestion, securityAnswer, recoveryPin } = req.body;
+      const { securityQuestion, securityAnswer, recoveryPin, emailVerified } = req.body;
       if (!securityQuestion || !securityAnswer || !recoveryPin) {
         return res.status(400).json({
           message: "Security question, answer, and recovery PIN are required"
@@ -319,11 +319,19 @@ export function setupAuth(app: Express) {
       }
 
       // Update the user's security info
-      const updatedUser = await storage.updateUser(req.user.id, {
+      const userUpdateData: any = {
         securityQuestion,
         securityAnswer,
         recoveryPin
-      });
+      };
+      
+      // Optionally mark email as verified (for "Just Trust Me" option)
+      if (emailVerified === true) {
+        userUpdateData.emailVerified = true;
+        console.log("Setting emailVerified to true via 'Just Trust Me' option");
+      }
+
+      const updatedUser = await storage.updateUser(req.user.id, userUpdateData);
 
       if (!updatedUser) {
         return res.status(500).json({ message: "Failed to update security information" });
