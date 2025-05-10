@@ -210,21 +210,28 @@ export default function EmailVerificationDialog({
                       className="flex items-center justify-center"
                       onClick={async () => {
                         try {
-                          // Show dialog for security info
-                          const securityQuestion = prompt("For security, please enter a security question");
-                          if (!securityQuestion) return;
+                          // Create default security info in case prompts are blocked
+                          let securityQuestion = "Your default security question";
+                          let securityAnswer = "your default answer";
+                          let recoveryPin = "1234";
                           
-                          const securityAnswer = prompt("Please enter the answer to your security question");
-                          if (!securityAnswer) return;
+                          // Try to get user input
+                          const userQuestion = window.prompt("For security, please enter a security question (e.g., 'What was your first pet's name?')");
+                          if (userQuestion) securityQuestion = userQuestion;
                           
-                          const recoveryPin = prompt("Please enter a 4-digit recovery PIN (numbers only)");
-                          if (!recoveryPin || !/^\d{4}$/.test(recoveryPin)) {
-                            toast({
-                              title: "Invalid PIN",
-                              description: "Recovery PIN must be 4 digits",
-                              variant: "destructive",
-                            });
-                            return;
+                          const userAnswer = window.prompt("Please enter the answer to your security question");
+                          if (userAnswer) securityAnswer = userAnswer;
+                          
+                          const userPin = window.prompt("Please enter a 4-digit recovery PIN (numbers only)");
+                          if (userPin) {
+                            if (!/^\d{4}$/.test(userPin)) {
+                              toast({
+                                title: "Invalid PIN format",
+                                description: "Using default PIN 1234 instead. You can update this later in settings.",
+                              });
+                            } else {
+                              recoveryPin = userPin;
+                            }
                           }
                           
                           // Show loading toast
@@ -260,10 +267,20 @@ export default function EmailVerificationDialog({
                             queryClient.invalidateQueries({ queryKey: ["/api/user"] });
                             onComplete();
                           } else {
-                            const error = await res.json();
+                            console.error("Error response:", res.status);
+                            let errorMessage = "Unable to verify email";
+                            
+                            try {
+                              const error = await res.json();
+                              console.error("Error details:", error);
+                              errorMessage = error.message || errorMessage;
+                            } catch (e) {
+                              console.error("Failed to parse error response", e);
+                            }
+                            
                             toast({
                               title: "Verification failed",
-                              description: error.message || "Unable to verify email",
+                              description: errorMessage,
                               variant: "destructive",
                             });
                           }
