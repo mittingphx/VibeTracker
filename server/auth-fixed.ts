@@ -301,13 +301,26 @@ export function setupAuth(app: Express) {
   // Set or update security question, answer, and recovery PIN
   app.post("/api/user/security", async (req: Request, res: Response) => {
     try {
+      console.log("Security endpoint received request body:", JSON.stringify(req.body));
+      
       // This route requires authentication
       if (!req.isAuthenticated()) {
+        console.log("Authentication failed for security endpoint");
         return res.status(401).json({ message: "Authentication required" });
       }
 
+      console.log("User authenticated:", req.user.username);
       const { securityQuestion, securityAnswer, recoveryPin, emailVerified } = req.body;
+      
+      console.log("Extracted values:", { 
+        securityQuestionExists: !!securityQuestion,
+        securityAnswerExists: !!securityAnswer,
+        recoveryPinExists: !!recoveryPin,
+        emailVerified
+      });
+      
       if (!securityQuestion || !securityAnswer || !recoveryPin) {
+        console.log("Missing required security fields");
         return res.status(400).json({
           message: "Security question, answer, and recovery PIN are required"
         });

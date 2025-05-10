@@ -233,17 +233,23 @@ export default function EmailVerificationDialog({
                             description: "Please wait...",
                           });
                           
+                          // Create the request body
+                          const requestBody = {
+                            securityQuestion,
+                            securityAnswer,
+                            recoveryPin,
+                            emailVerified: true
+                          };
+                          
+                          // Log the request for debugging
+                          console.log("Sending security request:", JSON.stringify(requestBody));
+                          
                           const res = await fetch(`/api/user/security`, {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({
-                              securityQuestion,
-                              securityAnswer,
-                              recoveryPin,
-                              emailVerified: true
-                            }),
+                            body: JSON.stringify(requestBody),
                           });
                           
                           if (res.ok) {
