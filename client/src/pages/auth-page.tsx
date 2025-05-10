@@ -403,7 +403,7 @@ export default function AuthPage() {
                     type={showPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Create a new password"
+                    placeholder="Enter new password"
                   />
                   <button
                     type="button"
@@ -427,7 +427,7 @@ export default function AuthPage() {
                     type={showPassword ? "text" : "password"}
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
-                    placeholder="Confirm your new password"
+                    placeholder="Confirm new password"
                   />
                   <button
                     type="button"
@@ -518,7 +518,7 @@ export default function AuthPage() {
                             <Input
                               type={showPassword ? "text" : "password"}
                               autoComplete="current-password"
-                              placeholder="••••••••"
+                              placeholder="Enter your password"
                               {...field}
                             />
                           </FormControl>
@@ -612,7 +612,7 @@ export default function AuthPage() {
                           <FormControl>
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Create a password"
+                              placeholder="Create password"
                               autoComplete="new-password"
                               {...field}
                             />
@@ -644,7 +644,7 @@ export default function AuthPage() {
                           <FormControl>
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Confirm your password"
+                              placeholder="Confirm password"
                               autoComplete="new-password"
                               {...field}
                             />
