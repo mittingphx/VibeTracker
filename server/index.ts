@@ -2,6 +2,37 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Custom function to load environment variables from .env.local
+function loadEnvFromFile() {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      console.log('Loading environment variables from .env.local');
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const envVars = envContent.split('\n');
+      
+      envVars.forEach(line => {
+        if (line && !line.startsWith('#')) {
+          const [key, value] = line.split('=');
+          if (key && value) {
+            process.env[key.trim()] = value.trim();
+            console.log(`Set env variable: ${key.trim()} = ${value.trim()}`);
+          }
+        }
+      });
+    } else {
+      console.log('.env.local file not found, skipping custom env loading');
+    }
+  } catch (error) {
+    console.error('Error loading .env.local file:', error);
+  }
+}
+
+// Load environment variables before anything else
+loadEnvFromFile();
 
 const app = express();
 app.use(express.json());

@@ -2,11 +2,16 @@ import sgMail from '@sendgrid/mail';
 import { randomBytes } from 'crypto';
 
 // Check for email verification disable flag
+console.log('DISABLE_EMAIL_VERIFICATION value:', process.env.DISABLE_EMAIL_VERIFICATION);
 const isEmailVerificationDisabled = process.env.DISABLE_EMAIL_VERIFICATION === 'true';
+console.log('Email verification disabled flag:', isEmailVerificationDisabled);
+
 if (isEmailVerificationDisabled) {
   console.log('Email verification is DISABLED via DISABLE_EMAIL_VERIFICATION environment variable');
   // Add this environment variable for the client-side
   process.env.VITE_DISABLE_EMAIL_VERIFICATION = 'true';
+  // Log to confirm the client env var is set
+  console.log('VITE_DISABLE_EMAIL_VERIFICATION set to:', process.env.VITE_DISABLE_EMAIL_VERIFICATION);
 }
 
 // Initialize SendGrid with API key - if email verification isn't disabled
