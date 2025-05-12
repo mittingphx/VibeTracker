@@ -17,6 +17,19 @@ interface EmailVerificationPromptProps {
 export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPromptProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Check if email verification is disabled via environment variable
+  const emailVerificationDisabled = import.meta.env.VITE_DISABLE_EMAIL_VERIFICATION === 'true';
+  console.log('Email verification disabled:', emailVerificationDisabled);
+  
+  // If disabled by environment variable, skip immediately
+  if (emailVerificationDisabled) {
+    console.log('Email verification dialog skipped due to environment variable');
+    // Use a small timeout to allow component to mount before calling onSkip
+    setTimeout(onSkip, 0);
+    return null;
+  }
+  
   const [open, setOpen] = useState(true);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 

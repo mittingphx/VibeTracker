@@ -1,16 +1,26 @@
 import sgMail from '@sendgrid/mail';
 import { randomBytes } from 'crypto';
 
-// Initialize SendGrid with API key
-if (process.env.SENDGRID_API_KEY) {
+// Check for email verification disable flag
+const isEmailVerificationDisabled = process.env.DISABLE_EMAIL_VERIFICATION === 'true';
+if (isEmailVerificationDisabled) {
+  console.log('Email verification is DISABLED via DISABLE_EMAIL_VERIFICATION environment variable');
+  // Add this environment variable for the client-side
+  process.env.VITE_DISABLE_EMAIL_VERIFICATION = 'true';
+}
+
+// Initialize SendGrid with API key - if email verification isn't disabled
+if (process.env.SENDGRID_API_KEY && !isEmailVerificationDisabled) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   console.log('SendGrid API key is configured. Email functionality is enabled.');
   // Log a masked version of the API key for debugging
   const maskedKey = process.env.SENDGRID_API_KEY.substring(0, 4) + '...' + 
                     process.env.SENDGRID_API_KEY.substring(process.env.SENDGRID_API_KEY.length - 4);
   console.log('SendGrid API key (masked):', maskedKey);
-} else {
+} else if (!process.env.SENDGRID_API_KEY && !isEmailVerificationDisabled) {
   console.error('SendGrid API key not set. Email functionality will be disabled.');
+} else {
+  console.log('Email service initialization skipped due to disabled verification.');
 }
 
 // Log environment variables (without exposing secrets)

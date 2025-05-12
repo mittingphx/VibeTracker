@@ -62,7 +62,11 @@ export default function Home() {
   
   // Check if user needs email verification
   useEffect(() => {
-    if (user && !user.emailVerified && !showSecuritySetup) {
+    // Check if email verification is disabled via environment variable
+    const emailVerificationDisabled = import.meta.env.VITE_DISABLE_EMAIL_VERIFICATION === 'true';
+    
+    // Only show email verification if it's not disabled
+    if (user && !user.emailVerified && !showSecuritySetup && !emailVerificationDisabled) {
       // First priority is security setup, then email verification
       // Don't show email prompt immediately if security setup is needed
       // We'll show it after security setup is complete
