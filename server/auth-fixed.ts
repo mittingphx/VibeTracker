@@ -431,7 +431,28 @@ export function setupAuth(app: Express) {
       // Generate verification token
       const verificationToken = generateVerificationToken();
 
-      // Update user with email and verification token
+      if (isEmailVerificationDisabled()) {
+        // If email verification is disabled, just update the email and mark as verified
+        console.log(`Auto-verifying email for user ID ${req.user.id} (email verification disabled)`);
+        const updatedUser = await storage.updateUser(req.user.id, {
+          email,
+          emailVerified: true
+        });
+
+        if (!updatedUser) {
+          return res.status(500).json({ message: "Failed to update email" });
+        }
+        
+        return res.json({
+          ...updatedUser,
+          password: undefined,
+          securityAnswer: undefined,
+          recoveryPin: undefined,
+          verificationToken: undefined
+        });
+      }
+      
+      // Regular flow - update user with email and verification token
       const updatedUser = await storage.updateUserEmail(req.user.id, email, verificationToken);
 
       if (!updatedUser) {

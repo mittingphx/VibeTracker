@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertTriangle, Mail, RefreshCcw } from 'lucide-react';
@@ -23,10 +23,19 @@ export default function EmailVerificationPrompt({ onSkip }: EmailVerificationPro
   console.log('Email verification disabled:', emailVerificationDisabled);
   
   // If disabled by environment variable, skip immediately
+  useEffect(() => {
+    if (emailVerificationDisabled) {
+      console.log('Email verification dialog skipped due to environment variable');
+      toast({
+        title: "Email Verification Bypassed",
+        description: "Email verification has been disabled by administrator settings.",
+      });
+      onSkip();
+    }
+  }, [emailVerificationDisabled, onSkip, toast]);
+  
+  // If disabled, don't render anything
   if (emailVerificationDisabled) {
-    console.log('Email verification dialog skipped due to environment variable');
-    // Use a small timeout to allow component to mount before calling onSkip
-    setTimeout(onSkip, 0);
     return null;
   }
   
