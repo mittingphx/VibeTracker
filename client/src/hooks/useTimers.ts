@@ -12,6 +12,8 @@ export function useTimers() {
   const lastServerFetchRef = useRef<number>(Date.now());
   // Interval for client-side ticking
   const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Track if we have received data from server at least once
+  const [dataInitialized, setDataInitialized] = useState(false);
   
   // Get timers from server with much less frequent updates
   const {
@@ -28,11 +30,15 @@ export function useTimers() {
 
   // Update client timers whenever server data changes
   useEffect(() => {
-    if (serverTimers.length > 0) {
+    // If we have data or we've completed loading (even with empty data)
+    if (!isLoading) {
+      // Mark data as initialized even if empty - this is important to handle users with no timers
+      setDataInitialized(true);
       setClientTimers(serverTimers);
       lastServerFetchRef.current = Date.now();
+      console.log('Server data initialized with', serverTimers.length, 'timers');
     }
-  }, [serverTimers]);
+  }, [serverTimers, isLoading]);
 
   // Function to update client-side timers
   const updateClientTimers = useCallback(() => {
@@ -229,5 +235,6 @@ export function useTimers() {
     deleteTimer,
     archiveTimer,
     restoreTimer,
+    dataInitialized, // Adding flag to indicate data has been loaded at least once
   };
 }

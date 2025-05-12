@@ -23,7 +23,8 @@ export default function Home() {
     timers, 
     isLoading, 
     error,
-    archiveTimer 
+    archiveTimer,
+    dataInitialized
   } = useTimers();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -77,22 +78,32 @@ export default function Home() {
   // Only show new timer dialog for users with no timers on first login
   // Use localStorage to track if user has ever had timers before
   useEffect(() => {
-    // If we're logged in and data is loaded
-    if (user && !isLoading) {
+    // Only proceed if we're logged in, data is fully loaded, and we've completed at least one fetch from the server
+    if (user && !isLoading && !error && dataInitialized) {
+      // Ensure we've actually received data from the server before making decisions
+      // This prevents race conditions where we might show the dialog unnecessarily
+      console.log('Checking timer status:', { 
+        loggedIn: !!user, 
+        isLoading, 
+        timerCount: timers.length,
+        dataInitialized
+      });
+      
       const hasExistingTimers = localStorage.getItem('hasExistingTimers') === 'true';
       
       if (timers.length > 0) {
         // If user has timers now, remember this for future sessions
         localStorage.setItem('hasExistingTimers', 'true');
       } else if (timers.length === 0 && !hasExistingTimers) {
+        // Double-check to make sure we're not in a loading state or transition
         // Only show modal for new users with no timers
-        // We specifically avoid showing it on refresh for existing users
+        console.log('No timers found and no history of timers, showing new timer modal');
         setShowNewTimerModal(true);
         // Remember that we've prompted them once
         localStorage.setItem('hasExistingTimers', 'true');
       }
     }
-  }, [user, isLoading, timers.length]);
+  }, [user, isLoading, error, timers.length, dataInitialized]);
   
   // Initialize app and handle global events
   useEffect(() => {
