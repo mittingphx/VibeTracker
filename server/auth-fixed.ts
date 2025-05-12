@@ -32,7 +32,30 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 // Set up authentication middleware and routes
+// Helper function to check if email verification is disabled
+function isEmailVerificationDisabled(): boolean {
+  return process.env.DISABLE_EMAIL_VERIFICATION === 'true';
+}
+
+// Helper function to automatically verify user's email when verification is disabled
+async function autoVerifyEmailIfDisabled(userId: number): Promise<boolean> {
+  if (isEmailVerificationDisabled()) {
+    console.log(`Auto-verifying email for user ID ${userId} (email verification disabled)`);
+    try {
+      const updatedUser = await storage.verifyUserEmail(userId);
+      return !!updatedUser;
+    } catch (error) {
+      console.error('Error auto-verifying email:', error);
+      return false;
+    }
+  }
+  return false;
+}
+
 export function setupAuth(app: Express) {
+  // Log email verification status
+  console.log(`Email verification is ${isEmailVerificationDisabled() ? 'DISABLED' : 'ENABLED'}`);
+  
   // Generate a random session secret if not provided in environment
   const SESSION_SECRET = process.env.SESSION_SECRET || randomBytes(32).toString("hex");
   
@@ -102,6 +125,17 @@ export function setupAuth(app: Express) {
         password: await hashPassword(req.body.password),
       });
 
+      // If email verification is disabled, auto-verify the user's email
+      if (isEmailVerificationDisabled() && user.email) {
+        await autoVerifyEmailIfDisabled(user.id);
+        // Refresh user data after verification
+        const updatedUser = await storage.getUser(user.id);
+        if (updatedUser) {
+          // Update our user object
+          Object.assign(user, updatedUser);
+        }
+      }
+
       // Log the user in automatically after registration
       req.login(user, (err) => {
         if (err) return next(err);
@@ -142,8 +176,19 @@ export function setupAuth(app: Express) {
           }
         }
         
-        req.login(user, (err) => {
+        req.login(user, async (err) => {
           if (err) return next(err);
+          
+          // If email verification is disabled, auto-verify the user's email
+          if (isEmailVerificationDisabled() && !user.emailVerified) {
+            await autoVerifyEmailIfDisabled(user.id);
+            // Refresh user data after verification
+            const updatedUser = await storage.getUser(user.id);
+            if (updatedUser) {
+              // Update the user in the session
+              Object.assign(user, updatedUser);
+            }
+          }
           
           // Explicitly save the session to ensure it's stored before sending response
           req.session.save((err) => {
