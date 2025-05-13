@@ -1028,7 +1028,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         )}
-        {/* Fixed Footer showing selected timers - Now positioned at fixed distance from bottom */}
+        {/* Fixed Footer showing selected timers - Modern style with blue button */}
         <div className={`fixed left-0 right-0 p-3 border-t flex justify-between items-center shadow-md z-40 ${isMobile ? 'bottom-[4.5rem] w-full' : 'bottom-0 max-w-2xl mx-auto'}`}
           style={{
             backgroundColor: isDarkMode ? '#111827' : 'white',
@@ -1041,7 +1041,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
           <Button 
             variant="default" 
             size="sm" 
-            className="flex items-center gap-1 ml-2 bg-blue-600 hover:bg-blue-700"
+            className="flex items-center gap-1 ml-2 bg-blue-600 hover:bg-blue-700 text-white font-medium"
             onClick={() => setIsTimerSelectionOpen(true)}
           >
             <Filter className="h-4 w-4" />
@@ -1052,9 +1052,9 @@ export default function ChartView({ onClose }: ChartViewProps) {
         {/* Timer Selection Dialog (mobile-friendly) */}
         {isTimerSelectionOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className={`w-full max-w-md p-6 rounded-lg shadow-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} border-2 ${isDarkMode ? 'border-blue-700' : 'border-blue-200'}`}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Select Timers</h3>
+            <div className={`w-full max-w-md p-6 rounded-lg shadow-xl ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} border-2 ${isDarkMode ? 'border-blue-700' : 'border-blue-200'}`}>
+              <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+                <h3 className="text-lg font-semibold text-blue-400">Select Timers to Display</h3>
                 <Button variant="ghost" size="sm" onClick={() => setIsTimerSelectionOpen(false)}>
                   <X className="h-5 w-5" />
                 </Button>
@@ -1079,16 +1079,20 @@ export default function ChartView({ onClose }: ChartViewProps) {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setIsTimerSelectionOpen(false)}>
+              <div className="flex justify-end gap-3 mt-6 pt-3 border-t border-gray-700">
+                <Button variant="outline" 
+                       className={`${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : ''}`}
+                       onClick={() => setIsTimerSelectionOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => {
-                  // Save selections to localStorage
-                  localStorage.setItem('chartSelectedTimers', JSON.stringify(selectedTimerIds));
-                  setIsTimerSelectionOpen(false);
-                }}>
-                  Apply
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  onClick={() => {
+                    // Save selections to localStorage
+                    localStorage.setItem('chartSelectedTimers', JSON.stringify(selectedTimerIds));
+                    setIsTimerSelectionOpen(false);
+                  }}>
+                  Apply Changes
                 </Button>
               </div>
             </div>
