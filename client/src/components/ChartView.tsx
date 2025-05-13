@@ -932,23 +932,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         </div>
-        
-        {/* Fixed footer showing selected timers - always visible */}
-        <div className={`absolute bottom-0 left-0 right-0 h-12 px-4 flex items-center justify-between ${isDarkMode ? 'bg-gray-800 text-white border-t border-gray-700' : 'bg-white text-gray-900 border-t border-gray-200'} shadow-lg`}>
-          <div className="flex items-center">
-            <span className="font-bold mr-2">Viewing:</span>
-            <span className="text-sm">{getSelectedTimersSummary()}</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsTimerSelectionOpen(true)}
-            className="flex items-center"
-          >
-            <Filter className="h-4 w-4 mr-1" />
-            Filter
-          </Button>
-        </div>
+
         
         {/* Timer selection popup */}
         {isTimerSelectionOpen && (
