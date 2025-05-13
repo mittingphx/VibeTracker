@@ -10,6 +10,7 @@ import { useCharts, useTableData } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Timer, TimerHistory } from "@shared/schema";
 import {
   VictoryChart,
   VictoryBar,
@@ -112,7 +113,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
   };
   
   // Generate CSV content from timer history data
-  const generateCSV = (timerHistory: any[], timers: any[]): string => {
+  const generateCSV = (timerHistory: TimerHistory[], timers: Timer[]): string => {
     // Create header row
     let csv = "Timer,Label,Timestamp,Date,Time\n";
     
