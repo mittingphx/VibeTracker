@@ -6,7 +6,7 @@ import {
   CalendarIcon, Calendar as CalendarIcon2, CalendarDays, BarChart, BarChart2, 
   TrendingUp, Clock, X, Table2, Download, ChevronDown, Filter
 } from "lucide-react";
-import { useCharts } from "@/hooks/useCharts";
+import { useCharts, useTableData } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -183,8 +183,14 @@ export default function ChartView({ onClose }: ChartViewProps) {
   // Calculate date ranges based on chart mode and period
   const currentDate = startOfDay(new Date());
   
-  // Get start and end dates based on period
+  // Get start and end dates based on period and current selection
   let currentStart, currentEnd, comparisonStart, comparisonEnd;
+  
+  // For table view, use the selected date range
+  // Initialize with defaults in case chart type is not table
+  const dateRange = getDateRangeForOption(dateRangeOption);
+  const tableStart = dateRange.start;
+  const tableEnd = dateRange.end;
   
   if (chartPeriod === "daily") {
     // Daily view: today vs yesterday
@@ -213,6 +219,13 @@ export default function ChartView({ onClose }: ChartViewProps) {
     currentEnd,
     comparisonStart,
     comparisonEnd,
+    selectedTimerIds,
+  });
+  
+  // Fetch table data separately for the table view
+  const { tableData, isLoading: isTableLoading, error: tableError } = useTableData({
+    startDate: tableStart,
+    endDate: tableEnd,
     selectedTimerIds,
   });
 
@@ -766,7 +779,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                             const { start, end } = getDateRangeForOption(dateRangeOption);
                             
                             // Generate CSV and download
-                            const csvContent = generateCSV(rawHistoryData, timers);
+                            const csvContent = generateCSV(tableData, timers);
                             downloadCSV(csvContent, `timer-history-${format(start, "yyyy-MM-dd")}-to-${format(end, "yyyy-MM-dd")}.csv`);
                           }}
                         >
@@ -794,7 +807,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                             </tr>
                           </thead>
                           <tbody className={`divide-y divide-gray-200 dark:divide-gray-700 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-                            {isLoading ? (
+                            {isTableLoading ? (
                               <tr>
                                 <td colSpan={3} className="px-6 py-4 text-center">
                                   <div className="flex justify-center">
@@ -802,7 +815,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                                   </div>
                                 </td>
                               </tr>
-                            ) : rawHistoryData.length === 0 ? (
+                            ) : tableData.length === 0 ? (
                               <tr>
                                 <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                   No data available for the selected time period
@@ -810,7 +823,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                               </tr>
                             ) : (
                               // Filter and display the history data
-                              rawHistoryData
+                              tableData
                                 .filter(entry => selectedTimerIds.includes(entry.timerId))
                                 .map(entry => {
                                   const timer = getTimerById(entry.timerId);

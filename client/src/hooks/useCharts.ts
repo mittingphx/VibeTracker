@@ -55,9 +55,6 @@ interface ProcessedHistoryData {
   averageTimeBetweenPresses: AverageTimeChartDataPoint[];
   pressEvents: PressEventChartDataPoint[];
   
-  // Raw history data for table view
-  rawHistoryData: TimerHistory[];
-  
   isLoading: boolean;
   error: unknown;
 }
@@ -350,9 +347,6 @@ export function useCharts({
     // New chart data formats
     averageTimeBetweenPresses: processAverageTimeData(allHistory),
     pressEvents: processPressEventData(allHistory),
-    
-    // Raw history data for table view
-    rawHistoryData,
     
     isLoading: currentPeriodQuery.isLoading || comparisonPeriodQuery.isLoading,
     error: currentPeriodQuery.error || comparisonPeriodQuery.error,
