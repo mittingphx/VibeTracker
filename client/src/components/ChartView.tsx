@@ -48,6 +48,38 @@ type DateRangeOption = "today" | "yesterday" | "last7days" | "last30days" | "cus
 export default function ChartView({ onClose }: ChartViewProps) {
   const isMobile = useIsMobile();
   const { timers } = useTimers();
+  const [isTimerSelectionOpen, setIsTimerSelectionOpen] = useState(false);
+  
+  // Helper function to create a summary of selected timers
+  const getSelectedTimersSummary = () => {
+    if (selectedTimerIds?.length === 0) return "none";
+    if (selectedTimerIds?.length === timers.length) return "all timers";
+    
+    // Maximum width in characters before truncating
+    const maxWidth = isMobile ? 25 : 50;
+    let summary = "";
+    let numMore = 0;
+    
+    for (let i = 0; i < timers.length; i++) {
+      const timer = timers[i];
+      if (selectedTimerIds.includes(timer.id)) {
+        const addition = summary ? `, ${timer.label}` : timer.label;
+        
+        // Check if adding this timer would exceed our max width
+        if (summary.length + addition.length > maxWidth) {
+          numMore++;
+        } else {
+          summary += addition;
+        }
+      }
+    }
+    
+    if (numMore > 0) {
+      summary += ` and ${numMore} more...`;
+    }
+    
+    return summary;
+  };
   const [chartMode, setChartMode] = useState<ChartMode>("today");
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("daily");
   const [chartType, setChartType] = useState<ChartType>("count");
@@ -860,8 +892,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
             )}
           </div>
           
-          {/* Timer Selection for Chart */}
-          <div className={`p-4 ${isDarkMode ? 'text-white' : ''}`}>
+          {/* Timer Selection for Chart - Hidden on small screens */}
+          <div className={`p-4 ${isDarkMode ? 'text-white' : ''} ${isMobile ? 'hidden' : 'block'}`}>
             <h4 className="font-medium mb-2">Select Timers</h4>
             <div className="space-y-2">
               {timers.map((timer, index) => (
@@ -900,6 +932,102 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         </div>
+        
+        {/* Fixed footer showing selected timers - always visible */}
+        <div className={`absolute bottom-0 left-0 right-0 h-12 px-4 flex items-center justify-between ${isDarkMode ? 'bg-gray-800 text-white border-t border-gray-700' : 'bg-white text-gray-900 border-t border-gray-200'} shadow-lg`}>
+          <div className="flex items-center">
+            <span className="font-bold mr-2">Viewing:</span>
+            <span className="text-sm">{getSelectedTimersSummary()}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsTimerSelectionOpen(true)}
+            className="flex items-center"
+          >
+            <Filter className="h-4 w-4 mr-1" />
+            Filter
+          </Button>
+        </div>
+        
+        {/* Timer selection popup */}
+        {isTimerSelectionOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setIsTimerSelectionOpen(false)}>
+            <div 
+              className={`mx-4 p-4 max-w-md w-full rounded-lg shadow-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold">Select Timers</h3>
+                <Button variant="ghost" size="sm" onClick={() => setIsTimerSelectionOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              <div className="mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full mb-2"
+                  onClick={() => {
+                    // If all timers are selected, deselect all except one
+                    if (selectedTimerIds.length === timers.length) {
+                      const firstTimer = timers[0];
+                      if (firstTimer) {
+                        setSelectedTimerIds([firstTimer.id]);
+                        localStorage.setItem('chartSelectedTimers', JSON.stringify([firstTimer.id]));
+                      }
+                    } else {
+                      // Otherwise select all
+                      const allIds = timers.map(timer => timer.id);
+                      setSelectedTimerIds(allIds);
+                      localStorage.setItem('chartSelectedTimers', JSON.stringify(allIds));
+                    }
+                  }}
+                >
+                  {selectedTimerIds.length === timers.length ? "Deselect All" : "Select All"}
+                </Button>
+                
+                <div className="space-y-3">
+                  {timers.map((timer, index) => (
+                    <div key={timer.id} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2" 
+                          style={{ backgroundColor: getChartColorForTimer(index) }}
+                        ></div>
+                        <span>{timer.label}</span>
+                      </div>
+                      <Switch
+                        checked={selectedTimerIds.includes(timer.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            if (!selectedTimerIds.includes(timer.id)) {
+                              const newSelection = [...selectedTimerIds, timer.id];
+                              setSelectedTimerIds(newSelection);
+                              localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
+                            }
+                          } else {
+                            const newSelection = selectedTimerIds.filter(id => id !== timer.id);
+                            setSelectedTimerIds(newSelection);
+                            localStorage.setItem('chartSelectedTimers', JSON.stringify(newSelection));
+                          }
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <Button 
+                className="w-full"
+                onClick={() => setIsTimerSelectionOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
