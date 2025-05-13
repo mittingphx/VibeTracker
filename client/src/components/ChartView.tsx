@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CalendarIcon, Calendar, CalendarDays, BarChart, BarChart2, TrendingUp, Clock, X } from "lucide-react";
+import { 
+  CalendarIcon, Calendar, CalendarDays, BarChart, BarChart2, 
+  TrendingUp, Clock, X, Table2, Download
+} from "lucide-react";
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
 import { getThemePreference } from "@/lib/themeUtils";
@@ -18,7 +21,10 @@ import {
   VictoryLegend,
   VictoryTooltip,
 } from "victory";
-import { format, subDays, startOfDay, startOfWeek, endOfWeek, subWeeks, subMonths, startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { 
+  format, subDays, startOfDay, startOfWeek, endOfWeek, subWeeks, 
+  subMonths, startOfMonth, endOfMonth, parseISO, addDays 
+} from "date-fns";
 
 interface ChartViewProps {
   onClose: () => void;
@@ -26,8 +32,9 @@ interface ChartViewProps {
 
 type ChartMode = "today" | "compare";
 type ChartPeriod = "daily" | "weekly" | "monthly";
-type ChartType = "count" | "average" | "events";
+type ChartType = "count" | "average" | "events" | "table";
 type TimelinePeriod = "daily" | "weekly" | "monthly";
+type DateRangeOption = "today" | "yesterday" | "last7days" | "last30days" | "custom";
 
 export default function ChartView({ onClose }: ChartViewProps) {
   const isMobile = useIsMobile();
@@ -35,6 +42,12 @@ export default function ChartView({ onClose }: ChartViewProps) {
   const [chartMode, setChartMode] = useState<ChartMode>("today");
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("daily");
   const [chartType, setChartType] = useState<ChartType>("count");
+  
+  // Table view state
+  const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>("last7days");
+  const [customStartDate, setCustomStartDate] = useState<Date>(subDays(new Date(), 7));
+  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   
   // Track which timers are selected for chart display
   // Use localStorage to persist selection between sessions
@@ -183,10 +196,11 @@ export default function ChartView({ onClose }: ChartViewProps) {
         {/* Fixed Chart Type Selector - Always visible */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <Tabs defaultValue="count" className="w-full" onValueChange={(value) => setChartType(value as ChartType)}>
-            <TabsList className="grid grid-cols-3 mb-4">
+            <TabsList className="grid grid-cols-4 mb-4">
               <TabsTrigger value="count">Count</TabsTrigger>
               <TabsTrigger value="average">Average Time</TabsTrigger>
               <TabsTrigger value="events">Timeline</TabsTrigger>
+              <TabsTrigger value="table">Table</TabsTrigger>
             </TabsList>
           </Tabs>
           
@@ -194,6 +208,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
             {chartType === "count" && "Number of presses per day"}
             {chartType === "average" && "Average minutes between presses"}
             {chartType === "events" && "Timeline of press events"}
+            {chartType === "table" && "Detailed press history table"}
           </div>
         </div>
         
