@@ -1028,6 +1028,68 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         )}
+        {/* Fixed Footer showing selected timers */}
+        <div className={`fixed bottom-0 left-0 right-0 ${isMobile ? 'w-full' : 'max-w-2xl mx-auto'} p-3 border-t ${isDarkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200'} flex justify-between items-center shadow-md z-30`}>
+          <div className="flex-1 truncate">
+            <span className="text-sm font-medium">Showing: </span>
+            <span className="text-sm">{getSelectedTimersSummary()}</span>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1"
+            onClick={() => setIsTimerSelectionOpen(true)}
+          >
+            <Filter className="h-4 w-4" />
+            <span>Filter</span>
+          </Button>
+        </div>
+        
+        {/* Timer Selection Dialog (mobile-friendly) */}
+        {isTimerSelectionOpen && (
+          <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm`}>
+            <div className={`w-full max-w-md p-6 rounded-lg ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Select Timers</h3>
+                <Button variant="ghost" size="sm" onClick={() => setIsTimerSelectionOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {timers.map((timer, index) => (
+                  <div key={timer.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: getChartColorForTimer(index) }}></div>
+                      <span>{timer.label}</span>
+                    </div>
+                    <Switch
+                      checked={selectedTimerIds.includes(timer.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedTimerIds(prev => [...prev, timer.id]);
+                        } else {
+                          setSelectedTimerIds(prev => prev.filter(id => id !== timer.id));
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setIsTimerSelectionOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  // Save selections to localStorage
+                  localStorage.setItem('chartSelectedTimers', JSON.stringify(selectedTimerIds));
+                  setIsTimerSelectionOpen(false);
+                }}>
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
