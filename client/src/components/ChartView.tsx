@@ -679,6 +679,170 @@ export default function ChartView({ onClose }: ChartViewProps) {
                     </VictoryChart>
                   )
                 )}
+                
+                {/* Table View for Timer History */}
+                {chartType === "table" && (
+                  <>
+                    {/* Date Range Selector */}
+                    <div className="px-4 mb-6">
+                      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div className="flex-1">
+                          <div className="mb-2 text-sm font-medium">Date Range</div>
+                          <Select
+                            value={dateRangeOption}
+                            onValueChange={(value) => setDateRangeOption(value as DateRangeOption)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select date range" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="today">Today</SelectItem>
+                              <SelectItem value="yesterday">Yesterday</SelectItem>
+                              <SelectItem value="last7days">Last 7 days</SelectItem>
+                              <SelectItem value="last30days">Last 30 days</SelectItem>
+                              <SelectItem value="custom">Custom range</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {dateRangeOption === "custom" && (
+                          <div className="flex gap-2 items-end">
+                            <div className="flex-1">
+                              <div className="mb-2 text-sm font-medium">Start Date</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className="w-full justify-start text-left font-normal"
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {customStartDate ? format(customStartDate, "PPP") : "Select date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    selected={customStartDate}
+                                    onSelect={(date) => date && setCustomStartDate(date)}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="mb-2 text-sm font-medium">End Date</div>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className="w-full justify-start text-left font-normal"
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {customEndDate ? format(customEndDate, "PPP") : "Select date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    selected={customEndDate}
+                                    onSelect={(date) => date && setCustomEndDate(date)}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Export button */}
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            // Get the current date range
+                            const { start, end } = getDateRangeForOption(dateRangeOption);
+                            
+                            // Generate CSV and download
+                            const csvContent = generateCSV(rawHistoryData, timers);
+                            downloadCSV(csvContent, `timer-history-${format(start, "yyyy-MM-dd")}-to-${format(end, "yyyy-MM-dd")}.csv`);
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Export CSV
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Table display */}
+                    <div className={`mx-4 mb-4 border rounded-xl overflow-hidden ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className={`w-full ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                            <tr>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Timer
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Date
+                              </th>
+                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Time
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className={`divide-y divide-gray-200 dark:divide-gray-700 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+                            {isLoading ? (
+                              <tr>
+                                <td colSpan={3} className="px-6 py-4 text-center">
+                                  <div className="flex justify-center">
+                                    <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ) : rawHistoryData.length === 0 ? (
+                              <tr>
+                                <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                  No data available for the selected time period
+                                </td>
+                              </tr>
+                            ) : (
+                              // Filter and display the history data
+                              rawHistoryData
+                                .filter(entry => selectedTimerIds.includes(entry.timerId))
+                                .map(entry => {
+                                  const timer = getTimerById(entry.timerId);
+                                  const timestamp = new Date(entry.timestamp);
+                                  return (
+                                    <tr key={entry.id} className={`hover:${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                          <div className="h-3 w-3 rounded-full mr-2" style={{ backgroundColor: getChartColorForTimer(timers.findIndex(t => t.id === entry.timerId)) }}></div>
+                                          <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{timer.label}</div>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                          {format(timestamp, "MMM d, yyyy")}
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                          {format(timestamp, "h:mm:ss a")}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
