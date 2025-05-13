@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
-  CalendarIcon, Calendar, CalendarDays, BarChart, BarChart2, 
-  TrendingUp, Clock, X, Table2, Download
+  CalendarIcon, Calendar as CalendarIcon2, CalendarDays, BarChart, BarChart2, 
+  TrendingUp, Clock, X, Table2, Download, ChevronDown, Filter
 } from "lucide-react";
 import { useCharts } from "@/hooks/useCharts";
 import { useTimers } from "@/hooks/useTimers";
@@ -25,6 +25,15 @@ import {
   format, subDays, startOfDay, startOfWeek, endOfWeek, subWeeks, 
   subMonths, startOfMonth, endOfMonth, parseISO, addDays 
 } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ChartViewProps {
   onClose: () => void;
@@ -48,6 +57,90 @@ export default function ChartView({ onClose }: ChartViewProps) {
   const [customStartDate, setCustomStartDate] = useState<Date>(subDays(new Date(), 7));
   const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  
+  // Helper functions for the table view
+  const getDateRangeLabel = (option: DateRangeOption): string => {
+    switch (option) {
+      case "today": return "Today";
+      case "yesterday": return "Yesterday";
+      case "last7days": return "Last 7 Days";
+      case "last30days": return "Last 30 Days";
+      case "custom": return "Custom Range";
+      default: return "Select Range";
+    }
+  };
+  
+  // Calculate the actual date range based on selected option
+  const getDateRangeForOption = (option: DateRangeOption): { start: Date; end: Date } => {
+    const today = new Date();
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
+    
+    switch (option) {
+      case "today":
+        return { 
+          start: startOfDay(today), 
+          end: endOfToday 
+        };
+      case "yesterday":
+        const yesterday = subDays(today, 1);
+        return { 
+          start: startOfDay(yesterday), 
+          end: new Date(startOfDay(yesterday).getTime() + 24 * 60 * 60 * 1000 - 1)
+        };
+      case "last7days":
+        return { 
+          start: startOfDay(subDays(today, 6)), 
+          end: endOfToday 
+        };
+      case "last30days":
+        return { 
+          start: startOfDay(subDays(today, 29)), 
+          end: endOfToday 
+        };
+      case "custom":
+        return { 
+          start: startOfDay(customStartDate), 
+          end: new Date(startOfDay(customEndDate).getTime() + 24 * 60 * 60 * 1000 - 1)
+        };
+      default:
+        return { 
+          start: startOfDay(subDays(today, 6)), 
+          end: endOfToday 
+        };
+    }
+  };
+  
+  // Generate CSV content from timer history data
+  const generateCSV = (timerHistory: any[], timers: any[]): string => {
+    // Create header row
+    let csv = "Timer,Label,Timestamp,Date,Time\n";
+    
+    // Create data rows
+    timerHistory.forEach(entry => {
+      const timer = timers.find(t => t.id === entry.timerId) || { label: "Unknown" };
+      const timestamp = new Date(entry.timestamp);
+      const date = format(timestamp, "yyyy-MM-dd");
+      const time = format(timestamp, "HH:mm:ss");
+      
+      csv += `${entry.timerId},"${timer.label.replace(/"/g, '""')}","${entry.timestamp}","${date}","${time}"\n`;
+    });
+    
+    return csv;
+  };
+  
+  // Function to trigger CSV download
+  const downloadCSV = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   
   // Track which timers are selected for chart display
   // Use localStorage to persist selection between sessions

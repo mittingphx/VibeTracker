@@ -23,12 +23,26 @@ interface PressEventChartDataPoint {
   minutesSinceLast: number;
 }
 
+// Table view data type - this represents the raw timer history records
+interface TableViewData {
+  id: number;
+  timerId: number;
+  timestamp: string;
+  isActive: boolean;
+}
+
 interface UseChartsOptions {
   period: "daily" | "weekly" | "monthly";
   currentStart: Date;
   currentEnd: Date;
   comparisonStart: Date;
   comparisonEnd: Date;
+  selectedTimerIds: number[];
+}
+
+interface UseTableDataOptions {
+  startDate: Date;
+  endDate: Date;
   selectedTimerIds: number[];
 }
 
@@ -41,8 +55,57 @@ interface ProcessedHistoryData {
   averageTimeBetweenPresses: AverageTimeChartDataPoint[];
   pressEvents: PressEventChartDataPoint[];
   
+  // Raw history data for table view
+  rawHistoryData: TimerHistory[];
+  
   isLoading: boolean;
   error: unknown;
+}
+
+export function useTableData({
+  startDate,
+  endDate,
+  selectedTimerIds,
+}: UseTableDataOptions) {
+  // Query for table data within the specified date range
+  const tableDataQuery = useQuery<TimerHistory[]>({
+    queryKey: [
+      "/api/history",
+      formatISO(startDate),
+      formatISO(endDate),
+      "table",
+      selectedTimerIds.join(",")
+    ],
+    queryFn: async ({ queryKey }) => {
+      // Convert ISO strings back to date strings for the API
+      const response = await fetch(
+        `/api/history?startDate=${queryKey[1]}&endDate=${queryKey[2]}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch table data");
+      }
+      return response.json();
+    },
+    enabled: selectedTimerIds.length > 0,
+  });
+  
+  // Filter the results to only include selected timers and active records
+  // Sort by timestamp descending (newest first)
+  const tableData = tableDataQuery.data 
+    ? tableDataQuery.data
+        .filter(entry => 
+          selectedTimerIds.includes(entry.timerId) && entry.isActive
+        )
+        .sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+    : [];
+  
+  return {
+    tableData,
+    isLoading: tableDataQuery.isLoading,
+    error: tableDataQuery.error
+  };
 }
 
 export function useCharts({
@@ -92,6 +155,13 @@ export function useCharts({
     },
     enabled: selectedTimerIds.length > 0,
   });
+  
+  // Get the raw history data for the table view (combined data for the current period)
+  const rawHistoryData = currentPeriodQuery.data 
+    ? currentPeriodQuery.data.filter(entry => 
+        selectedTimerIds.includes(entry.timerId) && entry.isActive
+      ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    : [];
 
   // Process data for the count-based chart (original functionality)
   const processCountHistoryData = (
@@ -280,6 +350,9 @@ export function useCharts({
     // New chart data formats
     averageTimeBetweenPresses: processAverageTimeData(allHistory),
     pressEvents: processPressEventData(allHistory),
+    
+    // Raw history data for table view
+    rawHistoryData,
     
     isLoading: currentPeriodQuery.isLoading || comparisonPeriodQuery.isLoading,
     error: currentPeriodQuery.error || comparisonPeriodQuery.error,
