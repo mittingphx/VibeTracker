@@ -312,7 +312,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
   
   return (
     <div className={`${isMobile ? 'mobile-popup-position' : 'fixed inset-0 bg-black/50 backdrop-blur-sm z-20 flex justify-center items-center p-4'}`}>
-      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`flex flex-col w-full ${isMobile ? 'h-full' : 'max-w-2xl shadow-2xl h-[95vh] rounded-xl'} ${isDarkMode ? 'bg-gray-900' : 'bg-white'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} relative`}>
         {/* Fixed Header - Always visible */}
         <div className={`flex justify-between items-center p-4 border-b ${isDarkMode ? 'bg-blue-900/80 border-gray-700' : 'bg-blue-200 border-gray-200'}`}>
           <div className="flex items-center gap-2">
@@ -350,8 +350,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
           </div>
         </div>
         
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-auto">
+        {/* Scrollable Content Area - Adding padding at bottom for fixed footer */}
+        <div className="flex-1 overflow-auto pb-14">
         
           {/* Chart Mode Selector */}
           {chartType === "count" && (
