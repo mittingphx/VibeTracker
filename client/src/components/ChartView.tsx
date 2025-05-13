@@ -351,7 +351,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
         </div>
         
         {/* Scrollable Content Area - Adding padding at bottom for fixed footer */}
-        <div className="flex-1 overflow-auto pb-14">
+        <div className="flex-1 overflow-auto pb-16">
         
           {/* Chart Mode Selector */}
           {chartType === "count" && (
@@ -1028,16 +1028,20 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         )}
-        {/* Fixed Footer showing selected timers */}
-        <div className={`fixed bottom-0 left-0 right-0 ${isMobile ? 'w-full' : 'max-w-2xl mx-auto'} p-3 border-t ${isDarkMode ? 'bg-gray-900 border-gray-700 text-white' : 'bg-white border-gray-200'} flex justify-between items-center shadow-md z-30`}>
+        {/* Fixed Footer showing selected timers - Adjusted for better visibility */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t flex justify-between items-center shadow-md z-40" 
+          style={{
+            backgroundColor: isDarkMode ? '#111827' : 'white',
+            borderColor: isDarkMode ? '#374151' : '#e5e7eb'
+          }}>
           <div className="flex-1 truncate">
             <span className="text-sm font-medium">Showing: </span>
             <span className="text-sm">{getSelectedTimersSummary()}</span>
           </div>
           <Button 
-            variant="outline" 
+            variant="default" 
             size="sm" 
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 ml-2 bg-blue-600 hover:bg-blue-700"
             onClick={() => setIsTimerSelectionOpen(true)}
           >
             <Filter className="h-4 w-4" />
@@ -1047,8 +1051,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
         
         {/* Timer Selection Dialog (mobile-friendly) */}
         {isTimerSelectionOpen && (
-          <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm`}>
-            <div className={`w-full max-w-md p-6 rounded-lg ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className={`w-full max-w-md p-6 rounded-lg shadow-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} border-2 ${isDarkMode ? 'border-blue-700' : 'border-blue-200'}`}>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Select Timers</h3>
                 <Button variant="ghost" size="sm" onClick={() => setIsTimerSelectionOpen(false)}>
