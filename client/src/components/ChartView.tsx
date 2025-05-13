@@ -1028,8 +1028,8 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         )}
-        {/* Fixed Footer showing selected timers - Positioned above navbar */}
-        <div className={`absolute left-0 right-0 p-3 border-t flex justify-between items-center shadow-md z-40 ${isMobile ? 'bottom-16' : 'bottom-0'}`}
+        {/* Fixed Footer showing selected timers - Now positioned at fixed distance from bottom */}
+        <div className={`fixed left-0 right-0 p-3 border-t flex justify-between items-center shadow-md z-40 ${isMobile ? 'bottom-[4.5rem] w-full' : 'bottom-0 max-w-2xl mx-auto'}`}
           style={{
             backgroundColor: isDarkMode ? '#111827' : 'white',
             borderColor: isDarkMode ? '#374151' : '#e5e7eb'

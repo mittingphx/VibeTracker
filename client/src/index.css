@@ -16,8 +16,8 @@
   /* Mobile popup positioning class that aligns to top of screen and leaves space for navbar */
   .mobile-popup-position {
     @apply fixed inset-x-0 top-0 z-40 !mt-0 overflow-auto;
-    height: calc(100vh - 4.5rem); /* Account for navbar height plus buffer */
-    max-height: calc(100vh - 4.5rem);
-    padding-bottom: 6.5rem; /* Extra padding (5rem + 1.5rem) at bottom to ensure content can scroll well past the navbar */
+    height: calc(100vh - 8rem); /* Reduced height to account for navbar and filter bar */
+    max-height: calc(100vh - 8rem);
+    padding-bottom: 6.5rem; /* Extra padding at bottom to ensure content can scroll well past the navbar */
   }
 }
