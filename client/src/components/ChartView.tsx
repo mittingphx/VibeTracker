@@ -351,7 +351,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
         </div>
         
         {/* Scrollable Content Area - Adding padding for fixed footer and navbar */}
-        <div className={`flex-1 overflow-auto ${isMobile ? 'pb-28' : 'pb-16'}`}>
+        <div className={`flex-1 overflow-auto ${isMobile ? 'pb-24' : 'pb-16'}`}>
         
           {/* Chart Mode Selector */}
           {chartType === "count" && (
@@ -932,7 +932,23 @@ export default function ChartView({ onClose }: ChartViewProps) {
             </div>
           </div>
         </div>
-
+        
+        {/* Fixed footer showing selected timers - always visible */}
+        <div className={`absolute bottom-0 left-0 right-0 h-12 px-4 flex items-center justify-between ${isDarkMode ? 'bg-gray-800 text-white border-t border-gray-700' : 'bg-white text-gray-900 border-t border-gray-200'} shadow-lg`}>
+          <div className="flex items-center">
+            <span className="font-bold mr-2">Viewing:</span>
+            <span className="text-sm">{getSelectedTimersSummary()}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsTimerSelectionOpen(true)}
+            className="flex items-center"
+          >
+            <Filter className="h-4 w-4 mr-1" />
+            Filter
+          </Button>
+        </div>
         
         {/* Timer selection popup */}
         {isTimerSelectionOpen && (
@@ -1013,12 +1029,10 @@ export default function ChartView({ onClose }: ChartViewProps) {
           </div>
         )}
         {/* Fixed Footer showing selected timers - Positioned above navbar */}
-        <div className={`fixed p-3 border-t flex justify-between items-center shadow-md z-40 ${isMobile ? 'left-0 right-0' : 'max-w-2xl mx-auto left-1/2 -translate-x-1/2 rounded-b-xl'}`}
+        <div className={`absolute left-0 right-0 p-3 border-t flex justify-between items-center shadow-md z-40 ${isMobile ? 'bottom-16' : 'bottom-0'}`}
           style={{
             backgroundColor: isDarkMode ? '#111827' : 'white',
-            borderColor: isDarkMode ? '#374151' : '#e5e7eb',
-            bottom: isMobile ? '64px' : '0px',
-            width: isMobile ? '100%' : 'calc(100% - 2rem)'
+            borderColor: isDarkMode ? '#374151' : '#e5e7eb'
           }}>
           <div className="flex-1 truncate">
             <span className="text-sm font-medium">Showing: </span>
