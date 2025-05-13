@@ -825,7 +825,7 @@ export default function ChartView({ onClose }: ChartViewProps) {
                               // Filter and display the history data
                               tableData
                                 .filter(entry => selectedTimerIds.includes(entry.timerId))
-                                .map(entry => {
+                                .map((entry: any) => {
                                   const timer = getTimerById(entry.timerId);
                                   const timestamp = new Date(entry.timestamp);
                                   return (
